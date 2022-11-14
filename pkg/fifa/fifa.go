@@ -2,35 +2,36 @@ package fifa
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
 	go_fifa "github.com/ImDevinC/go-fifa"
-	"github.com/imdevinc/fifa-bot/pkg/executor"
+	"github.com/imdevinc/fifa-bot/pkg/queue"
 )
 
-var ErrMatchNotFound = errors.New("match not found")
-
-func GetNewMatches(ctx context.Context, fifaClient *go_fifa.Client, sfnClient *executor.Client) error {
+func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]queue.MatchOptions, error) {
 	matches, err := fifaClient.GetCurrentMatches()
 	if err != nil {
-		return err
+		return nil, err
 	}
+	var returnValue []queue.MatchOptions
 	for _, m := range matches {
-		err = checkForExistingMatch(ctx, &m)
-		if err != nil && !errors.Is(err, ErrMatchNotFound) {
-			return fmt.Errorf("failed checking for existing match. %w", err)
-		}
-		err = startWatchingMatch(ctx, &m, sfnClient)
-		if err != nil {
-			return fmt.Errorf("failed trying to watch match. %w", err)
-		}
+		returnValue = append(returnValue, queue.MatchOptions{
+			CompetitionId:  m.CompetitionId,
+			SeasonId:       m.SeasonId,
+			StageId:        m.StageId,
+			MatchId:        m.Id,
+			LastEvent:      "",
+			HomeTeamName:   m.HomeTeam.Name[0].Description,
+			AwayTeamName:   m.AwayTeam.Name[0].Description,
+			HomeTeamAbbrev: m.HomeTeam.Abbreviation,
+			AwayTeamAbbrev: m.AwayTeam.Abbreviation,
+		})
 	}
-	return nil
+	return returnValue, nil
 }
 
-func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *executor.StartMatchOptions) ([]string, error) {
+func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue.MatchOptions) ([]string, bool, error) {
 	events, err := fifaClient.GetMatchEvents(&go_fifa.GetMatchEventOptions{
 		CompetitionId: opts.CompetitionId,
 		SeasonId:      opts.SeasonId,
@@ -38,34 +39,29 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *execu
 		MatchId:       opts.MatchId,
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get match events. %w", err)
+		return nil, false, fmt.Errorf("failed to get match events. %w", err)
 	}
 	var returnValue []string
+	var lastEventFound = false
+	var matchOver = false
 	for _, evt := range events.Events {
+		if evt.Type == go_fifa.MatchEnd {
+			matchOver = true
+		}
+		if opts.LastEvent != "0" && !lastEventFound {
+			if evt.Id == opts.LastEvent {
+				lastEventFound = true
+			}
+			continue
+		}
+		opts.LastEvent = evt.Id
 		resp := processEvent(ctx, evt)
 		if resp == "" {
 			continue
 		}
 		returnValue = append(returnValue, resp)
 	}
-	return returnValue, nil
-}
-
-func checkForExistingMatch(ctx context.Context, m *go_fifa.MatchResponse) error {
-	return ErrMatchNotFound
-}
-
-func startWatchingMatch(ctx context.Context, m *go_fifa.MatchResponse, sfnClient *executor.Client) error {
-	err := sfnClient.StartMatch(ctx, &executor.StartMatchOptions{
-		CompetitionId: m.CompetitionId,
-		SeasonId:      m.SeasonId,
-		StageId:       m.StageId,
-		MatchId:       m.Id,
-	})
-	if err != nil {
-		return err
-	}
-	return nil
+	return returnValue, matchOver, nil
 }
 
 func processEvent(ctx context.Context, evt go_fifa.EventResponse) string {

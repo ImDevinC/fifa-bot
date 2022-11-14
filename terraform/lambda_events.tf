@@ -1,3 +1,10 @@
+data "aws_kms_secrets" "secrets" {
+  secret {
+    name    = "slack-webhook-url"
+    payload = var.encrypted_slack_url
+  }
+}
+
 resource "aws_lambda_function" "events" {
   filename         = "../bin/events.zip"
   function_name    = "fifa-events-watcher"
@@ -9,7 +16,7 @@ resource "aws_lambda_function" "events" {
   environment {
     variables = {
       QUEUE_URL         = aws_sqs_queue.events.url
-      SLACK_WEBHOOK_URL = "https://hooks.slack.com/services/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"
+      SLACK_WEBHOOK_URL = data.aws_kms_secrets.secrets.plaintext["slack-webhook-url"]
     }
   }
 }

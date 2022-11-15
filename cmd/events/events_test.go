@@ -15,31 +15,31 @@ func buildEvent() events.SQSEvent {
 			{
 				MessageAttributes: map[string]events.SQSMessageAttribute{
 					"CompetitionId": {
-						StringValue: aws.String("2000000005"),
+						StringValue: aws.String("dvtl8sf1262pd2aqgu641qa7u"),
 					},
 					"SeasonId": {
-						StringValue: aws.String("400250052"),
+						StringValue: aws.String("91jifxei9sjpv0afezbdhobo4"),
 					},
 					"StageId": {
-						StringValue: aws.String("b1ayaoa4q68n6464fy4orklqs"),
+						StringValue: aws.String("avxfk1rxjckv9qc3ahpx9fod0"),
 					},
 					"MatchId": {
-						StringValue: aws.String("3y748w6ppuxciynnoonrt9jx0"),
+						StringValue: aws.String("83deossj5098pa1h7aeelv7ro"),
 					},
 					"HomeTeamName": {
-						StringValue: aws.String("Austria Wien"),
+						StringValue: aws.String("Portgual"),
 					},
 					"AwayTeamName": {
-						StringValue: aws.String("FAK"),
+						StringValue: aws.String("Costa Rica"),
 					},
 					"HomeTeamAbbrev": {
-						StringValue: aws.String("Wolfsberger AC"),
+						StringValue: aws.String("POR"),
 					},
 					"AwayTeamAbbrev": {
-						StringValue: aws.String("WAC"),
+						StringValue: aws.String("CRC"),
 					},
 					"LastEvent": {
-						StringValue: aws.String("820"),
+						StringValue: aws.String("0"),
 					},
 				},
 			},

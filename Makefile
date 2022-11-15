@@ -1,15 +1,14 @@
 clean:
-	rm bin/*
+	rm -rf bin/*
 
-env:
-	export GOOS=linux
-	export GOARCH=amd64
-	export CGO_ENABLED=0
+build: clean build-events build-matches
 
-build: clean env build-events build-matches
-
-build-events: env
+build-events:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./bin/events ./cmd/events
 
-build-matches: env
+build-matches:
 	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./bin/matches ./cmd/matches
+
+dist: build
+	zip -j ./bin/events.zip ./bin/events
+	zip -j ./bin/matches.zip ./bin/matches

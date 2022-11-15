@@ -65,7 +65,7 @@ func SendToQueue(ctx context.Context, queueURL string, opts *MatchOptions) error
 		QueueUrl:    aws.String(queueURL),
 		MessageBody: aws.String("match"),
 	}
-	if opts.LastEvent != "0" {
+	if opts.LastEvent != "-1" {
 		input.DelaySeconds = 60
 	}
 	cfg, err := config.LoadDefaultConfig(ctx)

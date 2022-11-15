@@ -57,16 +57,19 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 			}
 		}
 		opts.LastEvent = evt.Id
-		resp := processEvent(ctx, evt)
+		resp := processEvent(ctx, evt, opts)
 		if resp == "" {
 			continue
 		}
 		returnValue = append(returnValue, resp)
 	}
+	if opts.LastEvent == "-1" {
+		opts.LastEvent = "0"
+	}
 	return returnValue, matchOver, nil
 }
 
-func processEvent(ctx context.Context, evt go_fifa.EventResponse) string {
+func processEvent(ctx context.Context, evt go_fifa.EventResponse, opts *queue.MatchOptions) string {
 	if _, exists := eventsToSkip[evt.Type]; exists {
 		return ""
 	}
@@ -91,8 +94,10 @@ func processEvent(ctx context.Context, evt go_fifa.EventResponse) string {
 	case go_fifa.MatchStart,
 		go_fifa.MatchEnd:
 		prefix = ":clock12:"
+		suffix = fmt.Sprintf("%s vs %s", opts.HomeTeamName, opts.AwayTeamName)
 	case go_fifa.HalfEnd:
 		prefix = ":clock1230:"
+		suffix = fmt.Sprintf("%s vs %s", opts.HomeTeamName, opts.AwayTeamName)
 	case go_fifa.PenaltyMissed,
 		go_fifa.PenaltyMissed2:
 		prefix = ":no_entry_sign:"

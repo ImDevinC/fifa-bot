@@ -79,11 +79,14 @@ func processEvent(ctx context.Context, evt go_fifa.EventResponse, opts *queue.Ma
 	}
 	prefix := ""
 	suffix := ""
+	homeTeamFlag := flagEmojis[opts.HomeTeamAbbrev]
+	awayTeamFlag := flagEmojis[opts.AwayTeamAbbrev]
 	switch evt.Type {
 	case go_fifa.GoalScore,
 		go_fifa.OwnGoal,
 		go_fifa.PenaltyGoal:
 		prefix = ":soccer:"
+		suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayGoals)
 	case go_fifa.YellowCard,
 		go_fifa.DoubleYellow:
 		prefix = ":large_yellow_square:"
@@ -91,13 +94,15 @@ func processEvent(ctx context.Context, evt go_fifa.EventResponse, opts *queue.Ma
 		prefix = ":large_red_square:"
 	case go_fifa.Substitution:
 		prefix = ":arrows_counterclockwise:"
-	case go_fifa.MatchStart,
-		go_fifa.MatchEnd:
+	case go_fifa.MatchStart:
 		prefix = ":clock12:"
-		suffix = fmt.Sprintf("%s vs %s", opts.HomeTeamName, opts.AwayTeamName)
+		suffix = fmt.Sprintf("%s %s vs %s %s", opts.HomeTeamName, homeTeamFlag, awayTeamFlag, opts.AwayTeamName)
+	case go_fifa.MatchEnd:
+		prefix = ":clock12:"
+		suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayGoals)
 	case go_fifa.HalfEnd:
 		prefix = ":clock1230:"
-		suffix = fmt.Sprintf("%s vs %s", opts.HomeTeamName, opts.AwayTeamName)
+		suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamName, homeTeamFlag, awayTeamFlag, opts.AwayTeamName, evt.AwayGoals)
 	case go_fifa.PenaltyMissed,
 		go_fifa.PenaltyMissed2:
 		prefix = ":no_entry_sign:"

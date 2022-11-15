@@ -24,19 +24,19 @@ func buildEvent() events.SQSEvent {
 						StringValue: aws.String("avxfk1rxjckv9qc3ahpx9fod0"),
 					},
 					"MatchId": {
-						StringValue: aws.String("83deossj5098pa1h7aeelv7ro"),
+						StringValue: aws.String("1zezpnufrh16dwm5psod02qdw"),
 					},
 					"HomeTeamName": {
-						StringValue: aws.String("Portgual"),
+						StringValue: aws.String("Netherlands"),
 					},
 					"AwayTeamName": {
-						StringValue: aws.String("Costa Rica"),
+						StringValue: aws.String("Denmark"),
 					},
 					"HomeTeamAbbrev": {
-						StringValue: aws.String("POR"),
+						StringValue: aws.String("NED"),
 					},
 					"AwayTeamAbbrev": {
-						StringValue: aws.String("CRC"),
+						StringValue: aws.String("DEN"),
 					},
 					"LastEvent": {
 						StringValue: aws.String("0"),

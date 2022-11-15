@@ -35,4 +35,4 @@ require (
 	golang.org/x/sys v0.2.0 // indirect
 )
 
-// replace github.com/ImDevinC/go-fifa => ../go-fifa
+replace github.com/ImDevinC/go-fifa => ../go-fifa

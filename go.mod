@@ -3,7 +3,7 @@ module github.com/imdevinc/fifa-bot
 go 1.19
 
 require (
-	github.com/ImDevinC/go-fifa v0.0.0-20221115002508-0ec73d43d5e0
+	github.com/ImDevinC/go-fifa v0.0.0-20221115215209-c3580ae8c96f
 	github.com/aws/aws-lambda-go v1.34.1
 	github.com/aws/aws-sdk-go-v2 v1.17.1
 	github.com/aws/aws-sdk-go-v2/config v1.18.0
@@ -35,4 +35,4 @@ require (
 	golang.org/x/sys v0.2.0 // indirect
 )
 
-replace github.com/ImDevinC/go-fifa => ../go-fifa
+// replace github.com/ImDevinC/go-fifa => ../go-fifa

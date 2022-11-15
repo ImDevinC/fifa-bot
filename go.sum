@@ -1,5 +1,7 @@
 github.com/ImDevinC/go-fifa v0.0.0-20221115002508-0ec73d43d5e0 h1:e/alHZd3olGnTK3S6bYPDqV5K0LhiAwOVlfjB168ngA=
 github.com/ImDevinC/go-fifa v0.0.0-20221115002508-0ec73d43d5e0/go.mod h1:hkouxmHWRSA9l0EuV0xCDRn7Pf3vAUVeh8ZH2pq4EtU=
+github.com/ImDevinC/go-fifa v0.0.0-20221115215209-c3580ae8c96f h1:goNBY/76MEIhmm1otWDf4m8bv7UmgHSuiFCbD5Jwcww=
+github.com/ImDevinC/go-fifa v0.0.0-20221115215209-c3580ae8c96f/go.mod h1:hkouxmHWRSA9l0EuV0xCDRn7Pf3vAUVeh8ZH2pq4EtU=
 github.com/aws/aws-lambda-go v1.34.1 h1:M3a/uFYBjii+tDcOJ0wL/WyFi2550FHoECdPf27zvOs=
 github.com/aws/aws-lambda-go v1.34.1/go.mod h1:jwFe2KmMsHmffA1X2R09hH6lFzJQxzI8qK17ewzbQMM=
 github.com/aws/aws-sdk-go-v2 v1.17.1 h1:02c72fDJr87N8RAC2s3Qu0YuvMRZKNZJ9F+lAehCazk=

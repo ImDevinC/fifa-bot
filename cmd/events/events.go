@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"net/http"
 	"os"
 	"strings"
 
@@ -22,16 +25,15 @@ type SlackMessage struct {
 // be a raw string that will be sent as the `text: ` value in a slack message
 func sendEventsToSlack(ctx context.Context, webhookURL string, events []string) error {
 	for _, evt := range events {
-		log.Println(evt)
-		// payload := SlackMessage{Text: evt}
-		// b, err := json.Marshal(payload)
-		// if err != nil {
-		// 	return err
-		// }
-		// _, err = http.Post(webhookURL, "application/json", bytes.NewReader(b))
-		// if err != nil {
-		// 	return err
-		// }
+		payload := SlackMessage{Text: evt}
+		b, err := json.Marshal(payload)
+		if err != nil {
+			return err
+		}
+		_, err = http.Post(webhookURL, "application/json", bytes.NewReader(b))
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }

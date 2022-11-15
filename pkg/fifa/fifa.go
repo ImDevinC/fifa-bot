@@ -64,6 +64,12 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 		}
 		returnValue = append(returnValue, resp)
 	}
+	// If an event gets deleted, we may not find it above. In that case,
+	// let's just reset to the most recent event
+	if opts.LastEvent != "0" && !lastEventFound && len(events.Events) > 0 {
+		opts.LastEvent = events.Events[len(events.Events)-1].Id
+	}
+	// -1 means the event just came over from the match watcher
 	if opts.LastEvent == "-1" {
 		opts.LastEvent = "0"
 	}

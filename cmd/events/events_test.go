@@ -24,19 +24,19 @@ func buildEvent() events.SQSEvent {
 						StringValue: aws.String("avxfk1rxjckv9qc3ahpx9fod0"),
 					},
 					"MatchId": {
-						StringValue: aws.String("1zezpnufrh16dwm5psod02qdw"),
+						StringValue: aws.String("e24ipqu5rtqhn3k3uejhimas4"),
 					},
 					"HomeTeamName": {
-						StringValue: aws.String("Netherlands"),
+						StringValue: aws.String("Chile"),
 					},
 					"AwayTeamName": {
-						StringValue: aws.String("Denmark"),
+						StringValue: aws.String("Philippines"),
 					},
 					"HomeTeamAbbrev": {
-						StringValue: aws.String("NED"),
+						StringValue: aws.String("CHI"),
 					},
 					"AwayTeamAbbrev": {
-						StringValue: aws.String("DEN"),
+						StringValue: aws.String("PHI"),
 					},
 					"LastEvent": {
 						StringValue: aws.String("0"),
@@ -51,6 +51,7 @@ func buildEvent() events.SQSEvent {
 func TestProcess(t *testing.T) {
 	os.Setenv("QUEUE_URL", "TEST")
 	os.Setenv("SLACK_WEBHOOK_URL", "TEST")
+	os.Setenv("LOG_LEVEL", "DEBUG")
 	event := buildEvent()
 	err := HandleRequest(context.TODO(), event)
 	if err != nil {

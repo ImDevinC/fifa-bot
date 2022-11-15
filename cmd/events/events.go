@@ -1,8 +1,11 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
+	"net/http"
 	"os"
 	"strings"
 
@@ -22,16 +25,15 @@ type SlackMessage struct {
 // be a raw string that will be sent as the `text: ` value in a slack message
 func sendEventsToSlack(ctx context.Context, webhookURL string, events []string) error {
 	for _, evt := range events {
-		log.Println(evt)
-		// payload := SlackMessage{Text: evt}
-		// b, err := json.Marshal(payload)
-		// if err != nil {
-		// 	return err
-		// }
-		// _, err = http.Post(webhookURL, "application/json", bytes.NewReader(b))
-		// if err != nil {
-		// 	return err
-		// }
+		payload := SlackMessage{Text: evt}
+		b, err := json.Marshal(payload)
+		if err != nil {
+			return err
+		}
+		_, err = http.Post(webhookURL, "application/json", bytes.NewReader(b))
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
@@ -55,6 +57,12 @@ func isMatchActive(ctx context.Context, client *go_fifa.Client, opts *queue.Matc
 
 func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 	log.SetFormatter(&log.JSONFormatter{})
+	logLevel, err := log.ParseLevel(os.Getenv("LOG_LEVEL"))
+	if err != nil {
+		log.Error("could not determine log level")
+		logLevel = log.InfoLevel
+	}
+	log.SetLevel(logLevel)
 
 	queueURL := os.Getenv("QUEUE_URL")
 	if queueURL == "" {
@@ -64,13 +72,12 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 
 	webhookURL := os.Getenv("SLACK_WEBHOOK_URL")
 	if webhookURL == "" {
-		log.Error("[ERROR] Missing SLACK_WEBHOOK_URL")
+		log.Error("Missing SLACK_WEBHOOK_URL")
 		return errors.New("missing SLACK_WEBHOOK_URL")
 	}
 
 	var errWrap []string
 	for _, r := range event.Records {
-
 		opts := queue.MatchOptions{
 			CompetitionId:  *r.MessageAttributes["CompetitionId"].StringValue,
 			SeasonId:       *r.MessageAttributes["SeasonId"].StringValue,
@@ -82,6 +89,18 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 			AwayTeamAbbrev: *r.MessageAttributes["AwayTeamAbbrev"].StringValue,
 			LastEvent:      *r.MessageAttributes["LastEvent"].StringValue,
 		}
+		fields := log.Fields{
+			"competitionId":  opts.CompetitionId,
+			"seasonId":       opts.SeasonId,
+			"stageId":        opts.StageId,
+			"matchId":        opts.MatchId,
+			"homeTeamName":   opts.HomeTeamName,
+			"homeTeamAbbrev": opts.HomeTeamAbbrev,
+			"awayTeamName":   opts.AwayTeamName,
+			"awayteamAbbrev": opts.AwayTeamAbbrev,
+			"lastEvent":      opts.LastEvent,
+		}
+		log.WithFields(fields).Debug("checking for events")
 		fifaClient := go_fifa.Client{}
 		events, matchOver, err := fifa.GetMatchEvents(ctx, &fifaClient, &opts)
 		if err != nil {
@@ -89,6 +108,8 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 			errWrap = append(errWrap, err.Error())
 			continue
 		}
+		fields["lastEvent"] = opts.LastEvent
+		log.WithFields(fields).WithFields(log.Fields{"events": events, "matchOver": matchOver}).Debug("sending events to slack")
 		err = sendEventsToSlack(ctx, webhookURL, events)
 		if err != nil {
 			log.WithField("error", err).Error("failed to send message to slack")
@@ -105,12 +126,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 			continue
 		}
 		if !active {
-			log.WithFields(log.Fields{
-				"competitionId": opts.CompetitionId,
-				"seasonId":      opts.SeasonId,
-				"stageId":       opts.StageId,
-				"matchId":       opts.MatchId,
-			}).Warn("match was not marked as completed, but is no longer live")
+			log.WithFields(fields).Warn("match was not marked as completed, but is no longer live")
 			continue
 		}
 		err = queue.SendToQueue(ctx, queueURL, &opts)

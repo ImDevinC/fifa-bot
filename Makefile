@@ -1,14 +1,15 @@
 clean:
-	del bin /Q /F /S
+	rm bin/*
 
 env:
-	set GOOS=linux
-	set GOARCH=amd64
+	export GOOS=linux
+	export GOARCH=amd64
+	export CGO_ENABLED=0
 
-build: env build-events build-matches
+build: clean env build-events build-matches
 
 build-events: env
-	go build -o ./bin/events ./cmd/events
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./bin/events ./cmd/events
 
 build-matches: env
-	go build -o ./bin/matches ./cmd/matches
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o ./bin/matches ./cmd/matches

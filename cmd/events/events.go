@@ -115,12 +115,12 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 			}).Warn("match was not marked as completed, but is no longer live")
 			continue
 		}
-		// err = queue.SendToQueue(ctx, queueURL, &opts)
-		// if err != nil {
-		// 	log.WithField("error", err).Error("failed to send message to queue")
-		// 	errWrap = append(errWrap, err.Error())
-		// 	continue
-		// }
+		err = queue.SendToQueue(ctx, queueURL, &opts)
+		if err != nil {
+			log.WithField("error", err).Error("failed to send message to queue")
+			errWrap = append(errWrap, err.Error())
+			continue
+		}
 	}
 	if len(errWrap) > 0 {
 		return errors.New(strings.Join(errWrap, "\n"))

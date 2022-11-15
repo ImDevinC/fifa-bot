@@ -48,11 +48,13 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 		if evt.Type == go_fifa.MatchEnd {
 			matchOver = true
 		}
-		if opts.LastEvent != "0" && !lastEventFound {
-			if evt.Id == opts.LastEvent {
+		if !lastEventFound {
+			if evt.Id == opts.LastEvent || opts.LastEvent == "0" {
 				lastEventFound = true
 			}
-			continue
+			if opts.LastEvent != "0" {
+				continue
+			}
 		}
 		opts.LastEvent = evt.Id
 		resp := processEvent(ctx, evt)
@@ -79,11 +81,11 @@ func processEvent(ctx context.Context, evt go_fifa.EventResponse) string {
 		go_fifa.OwnGoal,
 		go_fifa.PenaltyGoal:
 		prefix = ":soccer:"
-	case go_fifa.YellowCard:
-		prefix = ":yellowcard:"
-	case go_fifa.RedCard,
+	case go_fifa.YellowCard,
 		go_fifa.DoubleYellow:
-		prefix = ":redcard:"
+		prefix = ":large_yellow_square:"
+	case go_fifa.RedCard:
+		prefix = ":large_red_square:"
 	case go_fifa.Substitution:
 		prefix = ":arrows_counterclockwise:"
 	case go_fifa.MatchStart,
@@ -95,6 +97,7 @@ func processEvent(ctx context.Context, evt go_fifa.EventResponse) string {
 		go_fifa.PenaltyMissed2:
 		prefix = ":no_entry_sign:"
 	}
+	fmt.Printf("[DEBUG] (%d) %s\n", evt.Type, evt.EventDescription[0].Description)
 	msg := fmt.Sprintf("%s %s %s", prefix, evt.EventDescription[0].Description, suffix)
 	return strings.TrimSpace(msg)
 }

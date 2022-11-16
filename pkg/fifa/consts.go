@@ -5,6 +5,7 @@ import (
 )
 
 var eventsToSkip = map[go_fifa.MatchEvent]bool{
+	5:  true, // Substitution
 	9:  true, // Ref paused
 	10: true, // Ref resumed
 	12: true, // Goal attempt

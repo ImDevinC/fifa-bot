@@ -92,7 +92,6 @@ func initSentry() error {
 }
 
 func HandleRequest(ctx context.Context, event events.SQSEvent) error {
-
 	initLogging()
 
 	queueURL := os.Getenv("QUEUE_URL")

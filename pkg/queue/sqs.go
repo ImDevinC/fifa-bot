@@ -65,6 +65,10 @@ func SendToQueue(ctx context.Context, queueURL string, opts *MatchOptions) error
 				DataType:    aws.String("String"),
 				StringValue: aws.String(opts.AwayTeamAbbrev),
 			},
+			"TraceId": {
+				DataType:    aws.String("String"),
+				StringValue: aws.String(span.ToSentryTrace()),
+			},
 		},
 		QueueUrl:    aws.String(queueURL),
 		MessageBody: aws.String("match"),

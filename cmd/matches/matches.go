@@ -58,12 +58,14 @@ func HandleRequest(ctx context.Context) error {
 	}
 
 	initSentry()
-	defer sentry.Flush(2 * time.Second)
+	sentry.Flush(2 * time.Second)
 
 	span := sentry.StartSpan(ctx, "matches.HandleRequest", sentry.TransactionName("matches.HandleRequest"))
-	ctx = span.Context()
+	defer span.Finish()
 
-	dbClient, err := database.NewDynamoClient(ctx, tableName)
+	spanCtx := span.Context()
+
+	dbClient, err := database.NewDynamoClient(spanCtx, tableName)
 	if err != nil {
 		sentry.CaptureException(err)
 		log.WithError(err).Error("failed to connect to database")
@@ -71,7 +73,7 @@ func HandleRequest(ctx context.Context) error {
 	}
 
 	fifaClient := go_fifa.Client{}
-	matches, err := fifa.GetLiveMatches(ctx, &fifaClient)
+	matches, err := fifa.GetLiveMatches(spanCtx, &fifaClient)
 	if err != nil {
 		sentry.CaptureException(err)
 		log.WithError(err).Error("failed to get live matches")
@@ -79,7 +81,7 @@ func HandleRequest(ctx context.Context) error {
 	}
 	var errWrap []string
 	for _, m := range matches {
-		err := dbClient.DoesMatchExist(ctx, &m)
+		err := dbClient.DoesMatchExist(spanCtx, &m)
 		if !errors.Is(err, database.ErrMatchNotFound) {
 			continue
 		}
@@ -89,7 +91,7 @@ func HandleRequest(ctx context.Context) error {
 			errWrap = append(errWrap, err.Error())
 			continue
 		}
-		err = dbClient.AddMatch(ctx, &m)
+		err = dbClient.AddMatch(spanCtx, &m)
 		if err != nil {
 			sentry.CaptureException(err)
 			log.WithError(err).Error("failed to save match to database")
@@ -97,7 +99,7 @@ func HandleRequest(ctx context.Context) error {
 			continue
 		}
 		m.LastEvent = "-1"
-		err = queue.SendToQueue(ctx, queueURL, &m)
+		err = queue.SendToQueue(spanCtx, queueURL, &m)
 		if err != nil {
 			sentry.CaptureException(err)
 			log.WithError(err).Error("failed to send message to queue")
@@ -112,5 +114,9 @@ func HandleRequest(ctx context.Context) error {
 }
 
 func main() {
-	lambda.Start(HandleRequest)
+	if _, exists := os.LookupEnv("AWS_LAMBDA_RUNTIME_API"); exists {
+		lambda.Start(HandleRequest)
+	} else {
+		HandleRequest(context.TODO())
+	}
 }

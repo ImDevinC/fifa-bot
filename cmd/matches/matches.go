@@ -16,6 +16,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var release string = "development"
+
 func initLogging() {
 	log.SetFormatter(&log.JSONFormatter{})
 	logLevel, err := log.ParseLevel(os.Getenv("LOG_LEVEL"))
@@ -29,8 +31,9 @@ func initLogging() {
 func initSentry() error {
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:              os.Getenv("SENTRY_DSN"),
-		Debug:            true,
+		Debug:            false,
 		TracesSampleRate: 1.0,
+		Release:          release,
 	})
 	if err != nil {
 		log.WithError(err).Error("failed to initialize sentry")

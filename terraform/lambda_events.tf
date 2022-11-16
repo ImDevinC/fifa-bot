@@ -4,8 +4,12 @@ data "aws_kms_secrets" "secrets" {
     payload = var.encrypted_slack_url
   }
   secret {
-    name    = "sentry-dsn"
-    payload = var.encrypted_sentry_dsn
+    name    = "sentry-dsn-matches"
+    payload = var.encrypted_sentry_dsn_matches
+  }
+  secret {
+    name    = "sentry-dsn-events"
+    payload = var.encrypted_sentry_dsn_events
   }
 }
 
@@ -19,7 +23,7 @@ resource "aws_lambda_function" "events" {
   timeout          = 30
   environment {
     variables = {
-      SENTRY_DSN        = data.aws_kms_secrets.secrets.plaintext["sentry-dsn"]
+      SENTRY_DSN        = data.aws_kms_secrets.secrets.plaintext["sentry-dsn-events"]
       QUEUE_URL         = aws_sqs_queue.events.url
       SLACK_WEBHOOK_URL = data.aws_kms_secrets.secrets.plaintext["slack-webhook-url"]
       LOG_LEVEL         = "DEBUG"

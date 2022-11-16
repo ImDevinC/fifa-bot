@@ -23,6 +23,8 @@ type SlackMessage struct {
 	Text string `json:"text"`
 }
 
+var release string = "development"
+
 // sendEventsToSlack sends the payload to the webhookURL. This expects the message to
 // be a raw string that will be sent as the `text: ` value in a slack message
 func sendEventsToSlack(ctx context.Context, webhookURL string, events []string) error {
@@ -78,8 +80,9 @@ func initLogging() {
 func initSentry() error {
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:              os.Getenv("SENTRY_DSN"),
-		Debug:            true,
+		Debug:            false,
 		TracesSampleRate: 1.0,
+		Release:          release,
 	})
 	if err != nil {
 		log.WithError(err).Error("failed to initialize sentry")
@@ -89,6 +92,7 @@ func initSentry() error {
 }
 
 func HandleRequest(ctx context.Context, event events.SQSEvent) error {
+
 	initLogging()
 
 	queueURL := os.Getenv("QUEUE_URL")

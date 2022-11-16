@@ -110,13 +110,19 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 	defer sentry.Flush(2 * time.Second)
 
 	var initialTrace string
+	var rootSpan *sentry.Span
 	if len(event.Records) > 0 {
 		if val, exists := event.Records[0].MessageAttributes["TraceId"]; exists {
 			initialTrace = *val.StringValue
 		}
 	}
 
-	rootSpan := sentry.StartSpan(ctx, "events.HandleRequest", sentry.TransactionName("events.HandleRequest"), sentry.ContinueFromTrace(initialTrace))
+	if len(initialTrace) > 0 {
+		rootSpan = sentry.StartSpan(ctx, "events.HandleRequest", sentry.TransactionName("events.HandleRequest"), sentry.ContinueFromTrace(initialTrace))
+	} else {
+		rootSpan = sentry.StartSpan(ctx, "events.HandleRequest", sentry.TransactionName("events.HandleRequest"))
+	}
+
 	defer rootSpan.Finish()
 
 	var errWrap []string
@@ -135,6 +141,8 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 			AwayTeamAbbrev: *r.MessageAttributes["AwayTeamAbbrev"].StringValue,
 			LastEvent:      *r.MessageAttributes["LastEvent"].StringValue,
 		}
+
+		log.WithField("matchId", opts.MatchId).WithField("initialTrace", initialTrace).Debug("initialTrace result from header")
 
 		span.SetTag("competitionId", opts.CompetitionId)
 		span.SetTag("seasonId", opts.SeasonId)

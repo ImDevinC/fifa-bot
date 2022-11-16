@@ -41,9 +41,9 @@ func buildEvent() events.SQSEvent {
 					"LastEvent": {
 						StringValue: aws.String("0"),
 					},
-					"TraceId": {
-						StringValue: aws.String("5275bf3ebd698b81b3e225089f0d9c07-e34858c90ac8a076-1"),
-					},
+					// "TraceId": {
+					// 	StringValue: aws.String("5275bf3ebd698b81b3e225089f0d9c07-e34858c90ac8a076-1"),
+					// },
 				},
 			},
 		},
@@ -55,6 +55,7 @@ func TestProcess(t *testing.T) {
 	os.Setenv("QUEUE_URL", "TEST")
 	os.Setenv("SLACK_WEBHOOK_URL", "http://localhost:8000")
 	os.Setenv("LOG_LEVEL", "DEBUG")
+	os.Setenv("SENTRY_DSN", "https://799c42ee5136461b8547028121aefd4d@o4504167699382272.ingest.sentry.io/4504167701479424")
 	event := buildEvent()
 	err := HandleRequest(context.TODO(), event)
 	if err != nil {

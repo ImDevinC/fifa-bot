@@ -31,7 +31,7 @@ func initLogging() {
 func initSentry() error {
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:              os.Getenv("SENTRY_DSN"),
-		Debug:            false,
+		Debug:            true,
 		TracesSampleRate: 1.0,
 		Release:          release,
 	})

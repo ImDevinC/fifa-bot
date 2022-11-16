@@ -41,6 +41,9 @@ func buildEvent() events.SQSEvent {
 					"LastEvent": {
 						StringValue: aws.String("0"),
 					},
+					"TraceId": {
+						StringValue: aws.String("5275bf3ebd698b81b3e225089f0d9c07-e34858c90ac8a076-1"),
+					},
 				},
 			},
 		},

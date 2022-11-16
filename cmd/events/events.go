@@ -80,7 +80,7 @@ func initLogging() {
 func initSentry() error {
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:              os.Getenv("SENTRY_DSN"),
-		Debug:            false,
+		Debug:            true,
 		TracesSampleRate: 1.0,
 		Release:          release,
 	})
@@ -109,8 +109,16 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 	initSentry()
 	defer sentry.Flush(2 * time.Second)
 
-	rootSpan := sentry.StartSpan(ctx, "events.HandleRequest", sentry.TransactionName("events.HandleRequest"))
+	var initialTrace string
+	if len(event.Records) > 0 {
+		if val, exists := event.Records[0].MessageAttributes["TraceId"]; exists {
+			initialTrace = *val.StringValue
+		}
+	}
+
+	rootSpan := sentry.StartSpan(ctx, "events.HandleRequest", sentry.TransactionName("events.HandleRequest"), sentry.ContinueFromTrace(initialTrace))
 	defer rootSpan.Finish()
+	log.WithField("sentry-trace", rootSpan.ToSentryTrace()).Info("creating span")
 
 	var errWrap []string
 	for _, r := range event.Records {

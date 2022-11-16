@@ -67,7 +67,7 @@ func SendToQueue(ctx context.Context, queueURL string, opts *MatchOptions) error
 			},
 			"TraceId": {
 				DataType:    aws.String("String"),
-				StringValue: aws.String(span.ToSentryTrace()),
+				StringValue: aws.String(sentry.TransactionFromContext(span.Context()).ToSentryTrace()),
 			},
 		},
 		QueueUrl:    aws.String(queueURL),

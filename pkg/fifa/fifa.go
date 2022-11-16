@@ -6,13 +6,18 @@ import (
 	"strings"
 
 	go_fifa "github.com/ImDevinC/go-fifa"
+	"github.com/getsentry/sentry-go"
 	"github.com/imdevinc/fifa-bot/pkg/queue"
 	log "github.com/sirupsen/logrus"
 )
 
 func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]queue.MatchOptions, error) {
+	span := sentry.StartSpan(ctx, "fifa.GetLiveMatches")
+	defer span.Finish()
+
 	matches, err := fifaClient.GetCurrentMatches()
 	if err != nil {
+		sentry.CaptureException(err)
 		return nil, err
 	}
 	var returnValue []queue.MatchOptions
@@ -33,6 +38,9 @@ func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]queue.Ma
 }
 
 func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue.MatchOptions) ([]string, bool, error) {
+	span := sentry.StartSpan(ctx, "fifa.GetMatchEvents")
+	defer span.Finish()
+
 	events, err := fifaClient.GetMatchEvents(&go_fifa.GetMatchEventOptions{
 		CompetitionId: opts.CompetitionId,
 		SeasonId:      opts.SeasonId,
@@ -40,6 +48,7 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 		MatchId:       opts.MatchId,
 	})
 	if err != nil {
+		sentry.CaptureException(err)
 		return nil, false, fmt.Errorf("failed to get match events. %w", err)
 	}
 	var returnValue []string
@@ -77,6 +86,9 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 }
 
 func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.EventResponse, opts *queue.MatchOptions) string {
+	span := sentry.StartSpan(ctx, "fifa.processEvents")
+	defer span.Finish()
+
 	if _, exists := eventsToSkip[evt.Type]; exists {
 		return ""
 	}
@@ -94,6 +106,7 @@ func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.E
 		go_fifa.HalfEnd:
 		teamGoals, err := getMatchScores(ctx, fifaClient, opts)
 		if err != nil {
+			sentry.CaptureException(err)
 			log.WithError(err).Error("failed to get scores")
 			goals.Away = 0
 			goals.Home = 0
@@ -138,6 +151,9 @@ type Goals struct {
 }
 
 func getMatchScores(ctx context.Context, fifaClient *go_fifa.Client, opts *queue.MatchOptions) (Goals, error) {
+	span := sentry.StartSpan(ctx, "fifa.getMatchScores")
+	defer span.Finish()
+
 	match, err := fifaClient.GetMatchData(&go_fifa.GetMatchDataOptions{
 		CompetitionId: opts.CompetitionId,
 		SeasonId:      opts.SeasonId,
@@ -145,6 +161,7 @@ func getMatchScores(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 		MatchId:       opts.MatchId,
 	})
 	if err != nil {
+		sentry.CaptureException(err)
 		return Goals{}, err
 	}
 	return Goals{Home: match.HomeTeam.Score, Away: match.AwayTeam.Score}, nil

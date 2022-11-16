@@ -8,6 +8,7 @@ resource "aws_lambda_function" "watcher" {
   timeout          = 30
   environment {
     variables = {
+      SENTRY_DSN = data.aws_kms_secrets.secrets.plaintext["sentry-dsn"]
       QUEUE_URL  = aws_sqs_queue.events.url
       TABLE_NAME = aws_dynamodb_table.fifa_bot.id
     }

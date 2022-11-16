@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
+	"github.com/getsentry/sentry-go"
 )
 
 type MatchOptions struct {
@@ -23,6 +24,9 @@ type MatchOptions struct {
 }
 
 func SendToQueue(ctx context.Context, queueURL string, opts *MatchOptions) error {
+	span := sentry.StartSpan(ctx, "sqs.SendToQueue")
+	defer span.Finish()
+
 	input := &sqs.SendMessageInput{
 		MessageAttributes: map[string]types.MessageAttributeValue{
 			"CompetitionId": {
@@ -70,12 +74,14 @@ func SendToQueue(ctx context.Context, queueURL string, opts *MatchOptions) error
 	}
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
+		sentry.CaptureException(err)
 		return fmt.Errorf("failed to load default config. %w", err)
 	}
 
 	client := sqs.NewFromConfig(cfg)
 	_, err = client.SendMessage(ctx, input)
 	if err != nil {
+		sentry.CaptureException(err)
 		return fmt.Errorf("failed to send message to queue. %w", err)
 	}
 	return nil

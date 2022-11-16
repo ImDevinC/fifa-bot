@@ -5,16 +5,43 @@ import (
 	"errors"
 	"os"
 	"strings"
+	"time"
 
 	go_fifa "github.com/ImDevinC/go-fifa"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/getsentry/sentry-go"
 	"github.com/imdevinc/fifa-bot/pkg/database"
 	"github.com/imdevinc/fifa-bot/pkg/fifa"
 	"github.com/imdevinc/fifa-bot/pkg/queue"
 	log "github.com/sirupsen/logrus"
 )
 
+func initLogging() {
+	log.SetFormatter(&log.JSONFormatter{})
+	logLevel, err := log.ParseLevel(os.Getenv("LOG_LEVEL"))
+	if err != nil {
+		log.Error("could not determine log level")
+		logLevel = log.InfoLevel
+	}
+	log.SetLevel(logLevel)
+}
+
+func initSentry() error {
+	err := sentry.Init(sentry.ClientOptions{
+		Dsn:              os.Getenv("SENTRY_DSN"),
+		Debug:            true,
+		TracesSampleRate: 1.0,
+	})
+	if err != nil {
+		log.WithError(err).Error("failed to initialize sentry")
+		return err
+	}
+	return nil
+}
+
 func HandleRequest(ctx context.Context) error {
+	initLogging()
+
 	queueURL := os.Getenv("QUEUE_URL")
 	if queueURL == "" {
 		log.Error("missing QUEUE_URL")
@@ -27,16 +54,24 @@ func HandleRequest(ctx context.Context) error {
 		return errors.New("missing TABLE_NAME")
 	}
 
+	initSentry()
+	defer sentry.Flush(2 * time.Second)
+
+	span := sentry.StartSpan(ctx, "matches.HandleRequest", sentry.TransactionName("matches.HandleRequest"))
+	ctx = span.Context()
+
 	dbClient, err := database.NewDynamoClient(ctx, tableName)
 	if err != nil {
-		log.Println(err)
+		sentry.CaptureException(err)
+		log.WithError(err).Error("failed to connect to database")
 		return err
 	}
 
 	fifaClient := go_fifa.Client{}
 	matches, err := fifa.GetLiveMatches(ctx, &fifaClient)
 	if err != nil {
-		log.Println(err)
+		sentry.CaptureException(err)
+		log.WithError(err).Error("failed to get live matches")
 		return err
 	}
 	var errWrap []string
@@ -46,20 +81,23 @@ func HandleRequest(ctx context.Context) error {
 			continue
 		}
 		if err != nil && !errors.Is(err, database.ErrMatchNotFound) {
-			log.WithField("error", err).Error("failed to get match info from database")
+			sentry.CaptureException(err)
+			log.WithError(err).Error("failed to get match info from database")
 			errWrap = append(errWrap, err.Error())
 			continue
 		}
 		err = dbClient.AddMatch(ctx, &m)
 		if err != nil {
-			log.WithField("error", err).Error("failed to save match to database")
+			sentry.CaptureException(err)
+			log.WithError(err).Error("failed to save match to database")
 			errWrap = append(errWrap, err.Error())
 			continue
 		}
 		m.LastEvent = "-1"
 		err = queue.SendToQueue(ctx, queueURL, &m)
 		if err != nil {
-			log.WithField("error", err).Error("failed to send message to queue")
+			sentry.CaptureException(err)
+			log.WithError(err).Error("failed to send message to queue")
 			errWrap = append(errWrap, err.Error())
 			continue
 		}

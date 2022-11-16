@@ -50,7 +50,7 @@ func buildEvent() events.SQSEvent {
 
 func TestProcess(t *testing.T) {
 	os.Setenv("QUEUE_URL", "TEST")
-	os.Setenv("SLACK_WEBHOOK_URL", "TEST")
+	os.Setenv("SLACK_WEBHOOK_URL", "http://localhost:8000")
 	os.Setenv("LOG_LEVEL", "DEBUG")
 	event := buildEvent()
 	err := HandleRequest(context.TODO(), event)

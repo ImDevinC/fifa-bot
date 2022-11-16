@@ -118,7 +118,6 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 
 	rootSpan := sentry.StartSpan(ctx, "events.HandleRequest", sentry.TransactionName("events.HandleRequest"), sentry.ContinueFromTrace(initialTrace))
 	defer rootSpan.Finish()
-	log.WithField("sentry-trace", rootSpan.ToSentryTrace()).Info("creating span")
 
 	var errWrap []string
 	for _, r := range event.Records {

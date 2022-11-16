@@ -54,6 +54,11 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	var returnValue []string
 	var lastEventFound = false
 	var matchOver = false
+
+	// -1 means the event just came over from the match watcher
+	if opts.LastEvent == "-1" {
+		opts.LastEvent = "0"
+	}
 	for _, evt := range events.Events {
 		if evt.Type == go_fifa.MatchEnd {
 			matchOver = true
@@ -77,10 +82,6 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	// let's just reset to the most recent event
 	if opts.LastEvent != "0" && !lastEventFound && len(events.Events) > 0 {
 		opts.LastEvent = events.Events[len(events.Events)-1].Id
-	}
-	// -1 means the event just came over from the match watcher
-	if opts.LastEvent == "-1" {
-		opts.LastEvent = "0"
 	}
 	return returnValue, matchOver, nil
 }

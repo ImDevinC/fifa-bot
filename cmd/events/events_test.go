@@ -15,28 +15,28 @@ func buildEvent() events.SQSEvent {
 			{
 				MessageAttributes: map[string]events.SQSMessageAttribute{
 					"CompetitionId": {
-						StringValue: aws.String("dvtl8sf1262pd2aqgu641qa7u"),
+						StringValue: aws.String("cesdwwnxbc5fmajgroc0hqzy2"),
 					},
 					"SeasonId": {
-						StringValue: aws.String("91jifxei9sjpv0afezbdhobo4"),
+						StringValue: aws.String("40sncpbsyexdrmedcwjz1j0gk"),
 					},
 					"StageId": {
-						StringValue: aws.String("avxfk1rxjckv9qc3ahpx9fod0"),
+						StringValue: aws.String("5w0vi7wp50objhjfn51o5ck5w"),
 					},
 					"MatchId": {
-						StringValue: aws.String("e24ipqu5rtqhn3k3uejhimas4"),
+						StringValue: aws.String("3qxv1fe65nezrara3zsm5s55g"),
 					},
 					"HomeTeamName": {
-						StringValue: aws.String("Chile"),
+						StringValue: aws.String("Albania"),
 					},
 					"AwayTeamName": {
-						StringValue: aws.String("Philippines"),
+						StringValue: aws.String("Italy"),
 					},
 					"HomeTeamAbbrev": {
-						StringValue: aws.String("CHI"),
+						StringValue: aws.String("ALB"),
 					},
 					"AwayTeamAbbrev": {
-						StringValue: aws.String("PHI"),
+						StringValue: aws.String("ITA"),
 					},
 					"LastEvent": {
 						StringValue: aws.String("0"),

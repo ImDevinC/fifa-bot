@@ -79,8 +79,16 @@ func HandleRequest(ctx context.Context) error {
 		log.WithError(err).Error("failed to get live matches")
 		return err
 	}
+
+	watchComp := os.Getenv("WATCH_COMPETITION")
+	log.WithField("watchComp", watchComp).Debug("competition")
+
 	var errWrap []string
 	for _, m := range matches {
+		if len(watchComp) > 0 && m.CompetitionId != watchComp {
+			continue
+		}
+
 		err := dbClient.DoesMatchExist(spanCtx, &m)
 		if !errors.Is(err, database.ErrMatchNotFound) {
 			continue

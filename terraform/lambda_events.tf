@@ -17,7 +17,7 @@ resource "aws_lambda_function" "events" {
   filename         = "../bin/events.zip"
   function_name    = "fifa-events-watcher"
   role             = aws_iam_role.events.arn
-  handler          = "events"
+  handler          = "bin/events"
   source_code_hash = filebase64sha256("../bin/events.zip")
   runtime          = "go1.x"
   timeout          = 30

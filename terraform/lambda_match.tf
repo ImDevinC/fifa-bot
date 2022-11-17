@@ -2,7 +2,7 @@ resource "aws_lambda_function" "watcher" {
   filename         = "../bin/matches.zip"
   function_name    = "fifa-match-watcher"
   role             = aws_iam_role.watcher.arn
-  handler          = "matches"
+  handler          = "bin/matches"
   source_code_hash = filebase64sha256("../bin/matches.zip")
   runtime          = "go1.x"
   timeout          = 30

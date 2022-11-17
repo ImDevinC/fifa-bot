@@ -71,16 +71,20 @@ func initLogging() {
 	log.SetFormatter(&log.JSONFormatter{})
 	logLevel, err := log.ParseLevel(os.Getenv("LOG_LEVEL"))
 	if err != nil {
-		log.Error("could not determine log level")
 		logLevel = log.InfoLevel
 	}
 	log.SetLevel(logLevel)
 }
 
 func initSentry() error {
+	debug := false
+	if strings.ToLower(os.Getenv("LOG_LEVEL")) == "debug" {
+		debug = true
+	}
+
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:              os.Getenv("SENTRY_DSN"),
-		Debug:            true,
+		Debug:            debug,
 		TracesSampleRate: 1.0,
 		Release:          release,
 	})
@@ -125,6 +129,11 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 
 	defer rootSpan.Finish()
 
+	fifaClient := go_fifa.Client{}
+	fifaClient.Client = &http.Client{
+		Timeout: 5 * time.Second,
+	}
+
 	var errWrap []string
 	for _, r := range event.Records {
 		span := sentry.StartSpan(rootSpan.Context(), "events.EventLoop")
@@ -162,7 +171,6 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 		}
 		log.WithFields(fields).Debug("checking for events")
 
-		fifaClient := go_fifa.Client{}
 		events, matchOver, err := fifa.GetMatchEvents(rootSpan.Context(), &fifaClient, &opts)
 		if err != nil {
 			sentry.CaptureException(err)

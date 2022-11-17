@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
-	"os"
 	"testing"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/aws"
+
+	"github.com/joho/godotenv"
+	_ "github.com/joho/godotenv/autoload"
 )
 
 func buildEvent() events.SQSEvent {
@@ -52,12 +54,13 @@ func buildEvent() events.SQSEvent {
 }
 
 func TestProcess(t *testing.T) {
-	os.Setenv("QUEUE_URL", "TEST")
-	os.Setenv("SLACK_WEBHOOK_URL", "http://localhost:8000")
-	os.Setenv("LOG_LEVEL", "DEBUG")
-	os.Setenv("SENTRY_DSN", "https://799c42ee5136461b8547028121aefd4d@o4504167699382272.ingest.sentry.io/4504167701479424")
+	err := godotenv.Load("../../.env")
+	if err != nil {
+		t.Error(err)
+		t.FailNow()
+	}
 	event := buildEvent()
-	err := HandleRequest(context.TODO(), event)
+	err = HandleRequest(context.TODO(), event)
 	if err != nil {
 		t.Error(err)
 	}

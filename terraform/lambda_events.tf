@@ -26,7 +26,7 @@ resource "aws_lambda_function" "events" {
       SENTRY_DSN        = data.aws_kms_secrets.secrets.plaintext["sentry-dsn-events"]
       QUEUE_URL         = aws_sqs_queue.events.url
       SLACK_WEBHOOK_URL = data.aws_kms_secrets.secrets.plaintext["slack-webhook-url"]
-      LOG_LEVEL         = "DEBUG"
+      LOG_LEVEL         = "INFO"
     }
   }
 }

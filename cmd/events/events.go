@@ -31,10 +31,10 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 		return errors.New("missing QUEUE_URL")
 	}
 
-	webhookURL := os.Getenv("WEBHOOK_URL")
+	webhookURL := os.Getenv("SLACK_WEBHOOK_URL")
 	if len(webhookURL) == 0 {
-		log.Error("missing WEBHOOK_URL")
-		return errors.New("missing WEBHOOK_URL")
+		log.Error("missing SLACK_WEBHOOK_URL")
+		return errors.New("missing SLACK_WEBHOOK_URL")
 	}
 
 	err = helper.InitSentry(helper.SentryConfig{

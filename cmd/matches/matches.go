@@ -37,7 +37,7 @@ func initSentry() error {
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:              os.Getenv("SENTRY_DSN"),
 		Debug:            debug,
-		TracesSampleRate: 1,
+		TracesSampleRate: .5,
 		Release:          release,
 	})
 	if err != nil {
@@ -66,9 +66,10 @@ func HandleRequest(ctx context.Context) error {
 	defer sentry.Flush(2 * time.Second)
 
 	transaction := sentry.StartTransaction(ctx, "matches.HandleRequest", sentry.OpName("HandleRequest"))
+	defer transaction.Finish()
+
 	span := transaction.StartChild("matches.HandleRequest")
 	defer span.Finish()
-	defer transaction.Finish()
 
 	ctx = span.Context()
 

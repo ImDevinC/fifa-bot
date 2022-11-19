@@ -85,7 +85,7 @@ func initSentry() error {
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:              os.Getenv("SENTRY_DSN"),
 		Debug:            debug,
-		TracesSampleRate: 1,
+		TracesSampleRate: .5,
 		Release:          release,
 	})
 	if err != nil {
@@ -127,10 +127,10 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 	} else {
 		transaction = sentry.StartTransaction(ctx, "events.HandleRequest", sentry.OpName("HandleRequest"))
 	}
+	defer transaction.Finish()
 
 	rootSpan = transaction.StartChild("events.HandleRequest")
 	defer rootSpan.Finish()
-	defer transaction.Finish()
 
 	fifaClient := go_fifa.Client{}
 	fifaClient.Client = &http.Client{

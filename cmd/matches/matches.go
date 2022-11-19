@@ -50,6 +50,8 @@ func HandleRequest(ctx context.Context) error {
 		return err
 	}
 
+	defer sentry.Flush(2 * time.Second)
+
 	transaction := sentry.StartTransaction(ctx, "matches.HandleRequest", sentry.OpName("HandleRequest"))
 	defer transaction.Finish()
 

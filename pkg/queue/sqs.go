@@ -12,6 +12,15 @@ import (
 	"github.com/getsentry/sentry-go"
 )
 
+type Queue interface {
+	SendMessage(ctx context.Context, params *sqs.SendMessageInput, optFns ...func(*sqs.Options)) (*sqs.SendMessageOutput, error)
+}
+
+type Client struct {
+	Queue    Queue
+	QueueURL string
+}
+
 type MatchOptions struct {
 	CompetitionId  string
 	SeasonId       string
@@ -22,6 +31,16 @@ type MatchOptions struct {
 	AwayTeamName   string
 	HomeTeamAbbrev string
 	AwayTeamAbbrev string
+}
+
+func NewSQSClient(ctx context.Context, url string) (Client, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		sentry.CaptureException(err)
+		return Client{}, fmt.Errorf("failed to load default config. %w", err)
+	}
+	client := sqs.NewFromConfig(cfg)
+	return Client{Queue: client, QueueURL: url}, nil
 }
 
 func MatchOptsFromSQS(ctx context.Context, attributes map[string]events.SQSMessageAttribute) MatchOptions {
@@ -49,10 +68,9 @@ func MatchOptsFromSQS(ctx context.Context, attributes map[string]events.SQSMessa
 	return opts
 }
 
-func SendToQueue(ctx context.Context, queueURL string, opts *MatchOptions) error {
+func (c *Client) SendToQueue(ctx context.Context, opts *MatchOptions) error {
 	span := sentry.StartSpan(ctx, "sqs.SendToQueue")
 	defer span.Finish()
-
 	ctx = span.Context()
 
 	input := &sqs.SendMessageInput{
@@ -90,7 +108,7 @@ func SendToQueue(ctx context.Context, queueURL string, opts *MatchOptions) error
 				StringValue: aws.String(sentry.TransactionFromContext(ctx).ToSentryTrace()),
 			},
 		},
-		QueueUrl:    aws.String(queueURL),
+		QueueUrl:    aws.String(c.QueueURL),
 		MessageBody: aws.String("match"),
 	}
 
@@ -111,14 +129,8 @@ func SendToQueue(ctx context.Context, queueURL string, opts *MatchOptions) error
 	if opts.LastEvent != "-1" {
 		input.DelaySeconds = 60
 	}
-	cfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		sentry.CaptureException(err)
-		return fmt.Errorf("failed to load default config. %w", err)
-	}
 
-	client := sqs.NewFromConfig(cfg)
-	_, err = client.SendMessage(ctx, input)
+	_, err := c.Queue.SendMessage(ctx, input)
 	if err != nil {
 		sentry.CaptureException(err)
 		return fmt.Errorf("failed to send message to queue. %w", err)

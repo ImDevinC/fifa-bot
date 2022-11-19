@@ -58,7 +58,7 @@ func HandleRequest(ctx context.Context) error {
 	}
 
 	initSentry()
-	sentry.Flush(2 * time.Second)
+	defer sentry.Flush(2 * time.Second)
 
 	span := sentry.StartTransaction(ctx, "matches.HandleRequest")
 	defer span.Finish()

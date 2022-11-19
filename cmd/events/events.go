@@ -115,6 +115,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 
 	var initialTrace string
 	var rootSpan *sentry.Span
+	var transaction *sentry.Span
 	if len(event.Records) > 0 {
 		if val, exists := event.Records[0].MessageAttributes["TraceId"]; exists {
 			initialTrace = *val.StringValue
@@ -122,12 +123,14 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 	}
 
 	if len(initialTrace) > 0 {
-		rootSpan = sentry.StartSpan(ctx, "events.HandleRequest", sentry.TransactionName("events.HandleRequest"), sentry.ContinueFromTrace(initialTrace))
+		transaction = sentry.StartTransaction(ctx, "events.HandleRequest", sentry.ContinueFromTrace(initialTrace), sentry.OpName("HandleRequest"))
 	} else {
-		rootSpan = sentry.StartSpan(ctx, "events.HandleRequest", sentry.TransactionName("events.HandleRequest"))
+		transaction = sentry.StartTransaction(ctx, "events.HandleRequest", sentry.OpName("HandleRequest"))
 	}
 
+	rootSpan = transaction.StartChild("events.HandleRequest")
 	defer rootSpan.Finish()
+	defer transaction.Finish()
 
 	fifaClient := go_fifa.Client{}
 	fifaClient.Client = &http.Client{
@@ -138,6 +141,8 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 	for _, r := range event.Records {
 		span := sentry.StartSpan(rootSpan.Context(), "events.EventLoop")
 		defer span.Finish()
+
+		ctx = span.Context()
 
 		opts := queue.MatchOptsFromSQS(ctx, r.MessageAttributes)
 

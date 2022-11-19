@@ -65,8 +65,10 @@ func HandleRequest(ctx context.Context) error {
 	initSentry()
 	defer sentry.Flush(2 * time.Second)
 
-	span := sentry.StartTransaction(ctx, "matches.HandleRequest")
+	transaction := sentry.StartTransaction(ctx, "matches.HandleRequest", sentry.OpName("HandleRequest"))
+	span := transaction.StartChild("matches.HandleRequest")
 	defer span.Finish()
+	defer transaction.Finish()
 
 	ctx = span.Context()
 

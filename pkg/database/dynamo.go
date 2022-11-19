@@ -7,39 +7,43 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/getsentry/sentry-go"
 	"github.com/imdevinc/fifa-bot/pkg/queue"
 )
 
-type DatabaseClient struct {
-	ddbClient *dynamodb.Client
-	tableName string
+type Database interface {
+	GetItem(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error)
+	PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error)
+}
+
+type Client struct {
+	Database  Database
+	TableName string
 }
 
 var ErrMatchNotFound = errors.New("match not found")
 
-func NewDynamoClient(ctx context.Context, tableName string) (DatabaseClient, error) {
-	span := sentry.StartSpan(ctx, "dynamo.NewDynamoClient")
-	defer span.Finish()
+// func NewDynamoClient(ctx context.Context, tableName string) (DatabaseClient, error) {
+// 	span := sentry.StartSpan(ctx, "dynamo.NewDynamoClient")
+// 	defer span.Finish()
 
-	ctx = span.Context()
+// 	ctx = span.Context()
 
-	cfg, err := config.LoadDefaultConfig(ctx)
-	if err != nil {
-		sentry.CaptureException(err)
-		return DatabaseClient{}, err
-	}
-	client := dynamodb.NewFromConfig(cfg)
-	return DatabaseClient{
-		ddbClient: client,
-		tableName: tableName,
-	}, nil
-}
+// 	cfg, err := config.LoadDefaultConfig(ctx)
+// 	if err != nil {
+// 		sentry.CaptureException(err)
+// 		return DatabaseClient{}, err
+// 	}
+// 	client := dynamodb.NewFromConfig(cfg)
+// 	return DatabaseClient{
+// 		ddbClient: client,
+// 		tableName: tableName,
+// 	}, nil
+// }
 
-func (d *DatabaseClient) DoesMatchExist(ctx context.Context, opts *queue.MatchOptions) error {
+func (d *Client) DoesMatchExist(ctx context.Context, opts *queue.MatchOptions) error {
 	span := sentry.StartSpan(ctx, "dynamo.DoesMatchExist")
 	defer span.Finish()
 
@@ -51,9 +55,9 @@ func (d *DatabaseClient) DoesMatchExist(ctx context.Context, opts *queue.MatchOp
 				Value: opts.MatchId,
 			},
 		},
-		TableName: &d.tableName,
+		TableName: &d.TableName,
 	}
-	resp, err := d.ddbClient.GetItem(ctx, input)
+	resp, err := d.Database.GetItem(ctx, input)
 	if err != nil {
 		sentry.CaptureException(err)
 		return fmt.Errorf("failed to get item from dynamo. %w", err)
@@ -64,7 +68,7 @@ func (d *DatabaseClient) DoesMatchExist(ctx context.Context, opts *queue.MatchOp
 	return nil
 }
 
-func (d *DatabaseClient) AddMatch(ctx context.Context, opts *queue.MatchOptions) error {
+func (d *Client) AddMatch(ctx context.Context, opts *queue.MatchOptions) error {
 	span := sentry.StartSpan(ctx, "dynamo.AddMatch")
 	defer span.Finish()
 
@@ -73,7 +77,7 @@ func (d *DatabaseClient) AddMatch(ctx context.Context, opts *queue.MatchOptions)
 	ttl := time.Now().Add(time.Hour * 6)
 	ttlValue := strconv.FormatInt(ttl.Unix(), 10)
 	input := &dynamodb.PutItemInput{
-		TableName: &d.tableName,
+		TableName: &d.TableName,
 		Item: map[string]types.AttributeValue{
 			"MatchId": &types.AttributeValueMemberS{
 				Value: opts.MatchId,
@@ -83,7 +87,7 @@ func (d *DatabaseClient) AddMatch(ctx context.Context, opts *queue.MatchOptions)
 			},
 		},
 	}
-	_, err := d.ddbClient.PutItem(ctx, input)
+	_, err := d.Database.PutItem(ctx, input)
 	if err != nil {
 		sentry.CaptureException(err)
 		return fmt.Errorf("failed to put item into dynamo. %w", err)
@@ -91,24 +95,24 @@ func (d *DatabaseClient) AddMatch(ctx context.Context, opts *queue.MatchOptions)
 	return nil
 }
 
-func (d *DatabaseClient) DeleteMatch(ctx context.Context, opts *queue.MatchOptions) error {
-	span := sentry.StartSpan(ctx, "dynamo.DeleteMatch")
-	defer span.Finish()
+// func (d *DatabaseClient) DeleteMatch(ctx context.Context, opts *queue.MatchOptions) error {
+// 	span := sentry.StartSpan(ctx, "dynamo.DeleteMatch")
+// 	defer span.Finish()
 
-	ctx = span.Context()
+// 	ctx = span.Context()
 
-	input := &dynamodb.DeleteItemInput{
-		TableName: &d.tableName,
-		Key: map[string]types.AttributeValue{
-			"MatchId": &types.AttributeValueMemberS{
-				Value: opts.MatchId,
-			},
-		},
-	}
-	_, err := d.ddbClient.DeleteItem(ctx, input)
-	if err != nil {
-		sentry.CaptureException(err)
-		return fmt.Errorf("failed to delete item from dynamo. %w", err)
-	}
-	return nil
-}
+// 	input := &dynamodb.DeleteItemInput{
+// 		TableName: &d.tableName,
+// 		Key: map[string]types.AttributeValue{
+// 			"MatchId": &types.AttributeValueMemberS{
+// 				Value: opts.MatchId,
+// 			},
+// 		},
+// 	}
+// 	_, err := d.ddbClient.DeleteItem(ctx, input)
+// 	if err != nil {
+// 		sentry.CaptureException(err)
+// 		return fmt.Errorf("failed to delete item from dynamo. %w", err)
+// 	}
+// 	return nil
+// }

@@ -85,7 +85,7 @@ func initSentry() error {
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:              os.Getenv("SENTRY_DSN"),
 		Debug:            debug,
-		TracesSampleRate: 1.0,
+		TracesSampleRate: .5,
 		Release:          release,
 	})
 	if err != nil {

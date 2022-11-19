@@ -29,10 +29,15 @@ func initLogging() {
 }
 
 func initSentry() error {
+	debug := false
+	if strings.ToLower(os.Getenv("LOG_LEVEL")) == "debug" {
+		debug = true
+	}
+
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:              os.Getenv("SENTRY_DSN"),
-		Debug:            true,
-		TracesSampleRate: 1.0,
+		Debug:            debug,
+		TracesSampleRate: .5,
 		Release:          release,
 	})
 	if err != nil {

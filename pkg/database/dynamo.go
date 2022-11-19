@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/getsentry/sentry-go"
@@ -25,23 +26,23 @@ type Client struct {
 
 var ErrMatchNotFound = errors.New("match not found")
 
-// func NewDynamoClient(ctx context.Context, tableName string) (DatabaseClient, error) {
-// 	span := sentry.StartSpan(ctx, "dynamo.NewDynamoClient")
-// 	defer span.Finish()
+func NewDynamoClient(ctx context.Context, tableName string) (Client, error) {
+	span := sentry.StartSpan(ctx, "dynamo.NewDynamoClient")
+	defer span.Finish()
 
-// 	ctx = span.Context()
+	ctx = span.Context()
 
-// 	cfg, err := config.LoadDefaultConfig(ctx)
-// 	if err != nil {
-// 		sentry.CaptureException(err)
-// 		return DatabaseClient{}, err
-// 	}
-// 	client := dynamodb.NewFromConfig(cfg)
-// 	return DatabaseClient{
-// 		ddbClient: client,
-// 		tableName: tableName,
-// 	}, nil
-// }
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		sentry.CaptureException(err)
+		return Client{}, err
+	}
+	client := dynamodb.NewFromConfig(cfg)
+	return Client{
+		Database:  client,
+		TableName: tableName,
+	}, nil
+}
 
 func (d *Client) DoesMatchExist(ctx context.Context, opts *queue.MatchOptions) error {
 	span := sentry.StartSpan(ctx, "dynamo.DoesMatchExist")

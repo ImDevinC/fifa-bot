@@ -11,7 +11,6 @@ import (
 	"github.com/imdevinc/fifa-bot/pkg/app"
 	"github.com/imdevinc/fifa-bot/pkg/database"
 	"github.com/imdevinc/fifa-bot/pkg/queue"
-	log "github.com/sirupsen/logrus"
 )
 
 type TestDB struct {
@@ -40,8 +39,7 @@ func (q *TestQueue) SendMessage(ctx context.Context, params *sqs.SendMessageInpu
 var _ queue.Queue = (*TestQueue)(nil)
 
 func TestMatches(t *testing.T) {
-	config := app.MatchConfig{
-		LogLevel:   log.DebugLevel,
+	config := app.GetMatchesConfig{
 		FifaClient: &go_fifa.Client{},
 		DatabaseClient: &database.Client{Database: &TestDB{
 			GetItemFn: func(ctx context.Context, params *dynamodb.GetItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.GetItemOutput, error) {

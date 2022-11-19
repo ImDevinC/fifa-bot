@@ -1,4 +1,4 @@
-package app
+package helper
 
 import (
 	"github.com/getsentry/sentry-go"
@@ -12,12 +12,12 @@ type SentryConfig struct {
 	Debug           bool
 }
 
-func initLogging(logLevel log.Level) {
+func InitLogging(logLevel log.Level) {
 	log.SetFormatter(&log.JSONFormatter{})
 	log.SetLevel(logLevel)
 }
 
-func initSentry(config SentryConfig) error {
+func InitSentry(config SentryConfig) error {
 	err := sentry.Init(sentry.ClientOptions{
 		Dsn:              config.DSN,
 		Debug:            config.Debug,

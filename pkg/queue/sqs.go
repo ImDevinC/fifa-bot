@@ -6,6 +6,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/aws/aws-sdk-go-v2/service/sqs/types"
 	"github.com/getsentry/sentry-go"
@@ -30,6 +31,16 @@ type MatchOptions struct {
 	AwayTeamName   string
 	HomeTeamAbbrev string
 	AwayTeamAbbrev string
+}
+
+func NewSQSClient(ctx context.Context, url string) (Client, error) {
+	cfg, err := config.LoadDefaultConfig(ctx)
+	if err != nil {
+		sentry.CaptureException(err)
+		return Client{}, fmt.Errorf("failed to load default config. %w", err)
+	}
+	client := sqs.NewFromConfig(cfg)
+	return Client{Queue: client, QueueURL: url}, nil
 }
 
 func MatchOptsFromSQS(ctx context.Context, attributes map[string]events.SQSMessageAttribute) MatchOptions {

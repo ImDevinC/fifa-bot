@@ -3,10 +3,7 @@ package app
 import (
 	"context"
 	"errors"
-	"fmt"
-	"net/http"
 	"strings"
-	"time"
 
 	go_fifa "github.com/ImDevinC/go-fifa"
 	"github.com/getsentry/sentry-go"
@@ -16,28 +13,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type MatchConfig struct {
-	LogLevel       log.Level
-	HttpClient     *http.Client
-	SentryConfig   SentryConfig
+type GetMatchesConfig struct {
 	DatabaseClient *database.Client
 	QueueClient    *queue.Client
 	FifaClient     *go_fifa.Client
 	CompetitionId  string
 }
 
-func GetMatches(ctx context.Context, config *MatchConfig) error {
-	initLogging(config.LogLevel)
-	err := initSentry(config.SentryConfig)
-	if err != nil {
-		return fmt.Errorf("failed to initialize sentry")
-	}
-	defer sentry.Flush(2 * time.Second)
-
-	transaction := sentry.StartTransaction(ctx, "matches.HandleRequest", sentry.OpName("HandleRequest"))
-	defer transaction.Finish()
-
-	span := transaction.StartChild("matches.HandleRequest")
+func GetMatches(ctx context.Context, config *GetMatchesConfig) error {
+	span := sentry.StartSpan(ctx, "matches.HandleRequest")
 	defer span.Finish()
 
 	ctx = span.Context()

@@ -166,7 +166,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 		}
 		log.WithFields(fields).Debug("checking for events")
 
-		events, matchOver, err := fifa.GetMatchEvents(rootSpan.Context(), &fifaClient, &opts)
+		events, matchOver, err := fifa.GetMatchEvents(ctx, &fifaClient, &opts)
 		if err != nil {
 			sentry.CaptureException(err)
 			log.WithField("error", err).Error("failed to get match events")
@@ -176,7 +176,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 		fields["lastEvent"] = opts.LastEvent
 
 		log.WithFields(fields).WithFields(log.Fields{"events": events, "matchOver": matchOver}).Debug("sending events to slack")
-		err = sendEventsToSlack(rootSpan.Context(), webhookURL, events)
+		err = sendEventsToSlack(ctx, webhookURL, events)
 		if err != nil {
 			sentry.CaptureException(err)
 			log.WithField("error", err).Error("failed to send message to slack")
@@ -186,7 +186,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 		if matchOver {
 			continue
 		}
-		active, err := isMatchActive(rootSpan.Context(), &fifaClient, &opts)
+		active, err := isMatchActive(ctx, &fifaClient, &opts)
 		if err != nil {
 			sentry.CaptureException(err)
 			log.Error(err)
@@ -197,7 +197,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 			log.WithFields(fields).Warn("match was not marked as completed, but is no longer live")
 			continue
 		}
-		err = queue.SendToQueue(rootSpan.Context(), queueURL, &opts)
+		err = queue.SendToQueue(ctx, queueURL, &opts)
 		if err != nil {
 			sentry.CaptureException(err)
 			log.WithField("error", err).Error("failed to send message to queue")

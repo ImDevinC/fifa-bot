@@ -34,7 +34,10 @@ func GetMatches(ctx context.Context, config *MatchConfig) error {
 	}
 	defer sentry.Flush(2 * time.Second)
 
-	span := sentry.StartSpan(ctx, "matches.HandleRequest")
+	transaction := sentry.StartTransaction(ctx, "matches.HandleRequest", sentry.OpName("HandleRequest"))
+	defer transaction.Finish()
+
+	span := transaction.StartChild("matches.HandleRequest")
 	defer span.Finish()
 
 	ctx = span.Context()

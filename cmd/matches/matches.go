@@ -60,12 +60,12 @@ func HandleRequest(ctx context.Context) error {
 	initSentry()
 	sentry.Flush(2 * time.Second)
 
-	span := sentry.StartSpan(ctx, "matches.HandleRequest", sentry.TransactionName("matches.HandleRequest"))
+	span := sentry.StartTransaction(ctx, "matches.HandleRequest")
 	defer span.Finish()
 
-	spanCtx := span.Context()
+	ctx = span.Context()
 
-	dbClient, err := database.NewDynamoClient(spanCtx, tableName)
+	dbClient, err := database.NewDynamoClient(ctx, tableName)
 	if err != nil {
 		sentry.CaptureException(err)
 		log.WithError(err).Error("failed to connect to database")
@@ -73,7 +73,7 @@ func HandleRequest(ctx context.Context) error {
 	}
 
 	fifaClient := go_fifa.Client{}
-	matches, err := fifa.GetLiveMatches(spanCtx, &fifaClient)
+	matches, err := fifa.GetLiveMatches(ctx, &fifaClient)
 	if err != nil {
 		sentry.CaptureException(err)
 		log.WithError(err).Error("failed to get live matches")
@@ -89,7 +89,7 @@ func HandleRequest(ctx context.Context) error {
 			continue
 		}
 
-		err := dbClient.DoesMatchExist(spanCtx, &m)
+		err := dbClient.DoesMatchExist(ctx, &m)
 		if !errors.Is(err, database.ErrMatchNotFound) {
 			continue
 		}
@@ -99,7 +99,7 @@ func HandleRequest(ctx context.Context) error {
 			errWrap = append(errWrap, err.Error())
 			continue
 		}
-		err = dbClient.AddMatch(spanCtx, &m)
+		err = dbClient.AddMatch(ctx, &m)
 		if err != nil {
 			sentry.CaptureException(err)
 			log.WithError(err).Error("failed to save match to database")
@@ -107,7 +107,7 @@ func HandleRequest(ctx context.Context) error {
 			continue
 		}
 		m.LastEvent = "-1"
-		err = queue.SendToQueue(spanCtx, queueURL, &m)
+		err = queue.SendToQueue(ctx, queueURL, &m)
 		if err != nil {
 			sentry.CaptureException(err)
 			log.WithError(err).Error("failed to send message to queue")

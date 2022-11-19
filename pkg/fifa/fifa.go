@@ -41,6 +41,8 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	span := sentry.StartSpan(ctx, "fifa.GetMatchEvents")
 	defer span.Finish()
 
+	ctx = span.Context()
+
 	events, err := fifaClient.GetMatchEvents(&go_fifa.GetMatchEventOptions{
 		CompetitionId: opts.CompetitionId,
 		SeasonId:      opts.SeasonId,
@@ -89,6 +91,8 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.EventResponse, opts *queue.MatchOptions) string {
 	span := sentry.StartSpan(ctx, "fifa.processEvents")
 	defer span.Finish()
+
+	ctx = span.Context()
 
 	if _, exists := eventsToSkip[evt.Type]; exists {
 		return ""

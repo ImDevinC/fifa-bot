@@ -25,6 +25,8 @@ func NewDynamoClient(ctx context.Context, tableName string) (DatabaseClient, err
 	span := sentry.StartSpan(ctx, "dynamo.NewDynamoClient")
 	defer span.Finish()
 
+	ctx = span.Context()
+
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		sentry.CaptureException(err)
@@ -40,6 +42,8 @@ func NewDynamoClient(ctx context.Context, tableName string) (DatabaseClient, err
 func (d *DatabaseClient) DoesMatchExist(ctx context.Context, opts *queue.MatchOptions) error {
 	span := sentry.StartSpan(ctx, "dynamo.DoesMatchExist")
 	defer span.Finish()
+
+	ctx = span.Context()
 
 	input := &dynamodb.GetItemInput{
 		Key: map[string]types.AttributeValue{
@@ -63,6 +67,8 @@ func (d *DatabaseClient) DoesMatchExist(ctx context.Context, opts *queue.MatchOp
 func (d *DatabaseClient) AddMatch(ctx context.Context, opts *queue.MatchOptions) error {
 	span := sentry.StartSpan(ctx, "dynamo.AddMatch")
 	defer span.Finish()
+
+	ctx = span.Context()
 
 	ttl := time.Now().Add(time.Hour * 6)
 	ttlValue := strconv.FormatInt(ttl.Unix(), 10)
@@ -88,6 +94,8 @@ func (d *DatabaseClient) AddMatch(ctx context.Context, opts *queue.MatchOptions)
 func (d *DatabaseClient) DeleteMatch(ctx context.Context, opts *queue.MatchOptions) error {
 	span := sentry.StartSpan(ctx, "dynamo.DeleteMatch")
 	defer span.Finish()
+
+	ctx = span.Context()
 
 	input := &dynamodb.DeleteItemInput{
 		TableName: &d.tableName,

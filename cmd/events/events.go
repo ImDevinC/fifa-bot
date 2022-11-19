@@ -139,17 +139,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 		span := sentry.StartSpan(rootSpan.Context(), "events.EventLoop")
 		defer span.Finish()
 
-		opts := queue.MatchOptions{
-			CompetitionId:  *r.MessageAttributes["CompetitionId"].StringValue,
-			SeasonId:       *r.MessageAttributes["SeasonId"].StringValue,
-			StageId:        *r.MessageAttributes["StageId"].StringValue,
-			MatchId:        *r.MessageAttributes["MatchId"].StringValue,
-			HomeTeamName:   *r.MessageAttributes["HomeTeamName"].StringValue,
-			AwayTeamName:   *r.MessageAttributes["AwayTeamName"].StringValue,
-			HomeTeamAbbrev: *r.MessageAttributes["HomeTeamAbbrev"].StringValue,
-			AwayTeamAbbrev: *r.MessageAttributes["AwayTeamAbbrev"].StringValue,
-			LastEvent:      *r.MessageAttributes["LastEvent"].StringValue,
-		}
+		opts := queue.MatchOptsFromSQS(ctx, r.MessageAttributes)
 
 		log.WithField("matchId", opts.MatchId).WithField("initialTrace", initialTrace).Debug("initialTrace result from header")
 

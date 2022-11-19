@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
@@ -23,9 +24,36 @@ type MatchOptions struct {
 	AwayTeamAbbrev string
 }
 
+func MatchOptsFromSQS(ctx context.Context, attributes map[string]events.SQSMessageAttribute) MatchOptions {
+	span := sentry.StartSpan(ctx, "sqs.MatchOptsFromSQS")
+	defer span.Finish()
+
+	opts := MatchOptions{
+		CompetitionId: *attributes["CompetitionId"].StringValue,
+		SeasonId:      *attributes["SeasonId"].StringValue,
+		StageId:       *attributes["StageId"].StringValue,
+		MatchId:       *attributes["MatchId"].StringValue,
+		HomeTeamName:  *attributes["HomeTeamName"].StringValue,
+		AwayTeamName:  *attributes["AwayTeamName"].StringValue,
+		LastEvent:     *attributes["LastEvent"].StringValue,
+	}
+
+	if val, ok := attributes["AwayTeamAbbrev"]; ok {
+		opts.AwayTeamAbbrev = *val.StringValue
+	}
+
+	if val, ok := attributes["HomeTeamAbbrev"]; ok {
+		opts.HomeTeamAbbrev = *val.StringValue
+	}
+
+	return opts
+}
+
 func SendToQueue(ctx context.Context, queueURL string, opts *MatchOptions) error {
 	span := sentry.StartSpan(ctx, "sqs.SendToQueue")
 	defer span.Finish()
+
+	ctx = span.Context()
 
 	input := &sqs.SendMessageInput{
 		MessageAttributes: map[string]types.MessageAttributeValue{
@@ -57,22 +85,29 @@ func SendToQueue(ctx context.Context, queueURL string, opts *MatchOptions) error
 				DataType:    aws.String("String"),
 				StringValue: aws.String(opts.AwayTeamName),
 			},
-			"HomeTeamAbbrev": {
-				DataType:    aws.String("String"),
-				StringValue: aws.String(opts.HomeTeamAbbrev),
-			},
-			"AwayTeamAbbrev": {
-				DataType:    aws.String("String"),
-				StringValue: aws.String(opts.AwayTeamAbbrev),
-			},
 			"TraceId": {
 				DataType:    aws.String("String"),
-				StringValue: aws.String(sentry.TransactionFromContext(span.Context()).ToSentryTrace()),
+				StringValue: aws.String(sentry.TransactionFromContext(ctx).ToSentryTrace()),
 			},
 		},
 		QueueUrl:    aws.String(queueURL),
 		MessageBody: aws.String("match"),
 	}
+
+	if len(opts.AwayTeamAbbrev) > 0 {
+		input.MessageAttributes["AwayTeamAbbrev"] = types.MessageAttributeValue{
+			DataType:    aws.String("String"),
+			StringValue: aws.String(opts.AwayTeamAbbrev),
+		}
+	}
+
+	if len(opts.HomeTeamAbbrev) > 0 {
+		input.MessageAttributes["HomeTeamAbbrev"] = types.MessageAttributeValue{
+			DataType:    aws.String("String"),
+			StringValue: aws.String(opts.HomeTeamAbbrev),
+		}
+	}
+
 	if opts.LastEvent != "-1" {
 		input.DelaySeconds = 60
 	}

@@ -66,6 +66,11 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 	}
 	defer transaction.Finish()
 
+	span := transaction.StartChild("events.HandleRequest")
+	defer span.Finish()
+
+	ctx = span.Context()
+
 	sqsClient, err := queue.NewSQSClient(ctx, queueURL)
 	if err != nil {
 		log.WithError(err).Error("failed to create SQS client")

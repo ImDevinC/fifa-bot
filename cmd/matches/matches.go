@@ -55,6 +55,11 @@ func HandleRequest(ctx context.Context) error {
 	transaction := sentry.StartTransaction(ctx, "matches.HandleRequest", sentry.OpName("HandleRequest"))
 	defer transaction.Finish()
 
+	span := transaction.StartChild("matches.HandleRequest")
+	defer span.Finish()
+
+	ctx = span.Context()
+
 	sqsClient, err := queue.NewSQSClient(ctx, queueURL)
 	if err != nil {
 		log.WithError(err).Error("failed to create SQS client")

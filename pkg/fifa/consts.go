@@ -5,23 +5,23 @@ import (
 )
 
 var eventsToSkip = map[go_fifa.MatchEvent]bool{
-	5:    true, // Substitution
-	9:    true, // Ref paused
-	10:   true, // Ref resumed
-	12:   true, // Goal attempt
-	15:   true, // Offside
-	16:   true, // Corner kick
-	17:   true, // Blocked shot
-	18:   true, // Foul
-	19:   true, // Coin toss
-	20:   true, // Unknown
-	24:   true, // Throw in
-	25:   true, // Clearance
-	27:   true, // No idea
-	33:   true, // Crossbar
-	49:   true, // Free-kick post
-	57:   true, // Goalie save
-	9999: true, // Placeholder?
+	go_fifa.Substitution: true, // Substitution
+	go_fifa.MatchPaused:  true, // Ref paused
+	go_fifa.MatchResumed: true, // Ref resumed
+	go_fifa.GoalAttempt:  true, // Goal attempt
+	go_fifa.Offside:      true, // Offside
+	go_fifa.CornerKick:   true, // Corner kick
+	go_fifa.ShotBlocked:  true, // Blocked shot
+	go_fifa.Foul:         true, // Foul
+	go_fifa.CoinToss:     true, // Coin BlockedShottoss
+	go_fifa.Unknown3:     true, // Unknown
+	go_fifa.ThrowIn:      true, // Throw in
+	go_fifa.Clearance:    true, // Clearance
+	go_fifa.Unknown2:     true, // No idea
+	go_fifa.Crossbar:     true, // Crossbar
+	go_fifa.FreeKickPost: true, // Free-kick post
+	go_fifa.GoalieSaved:  true, // Goalie save
+	go_fifa.Unknown:      true, // Placeholder?
 }
 
 var flagEmojis = map[string]string{

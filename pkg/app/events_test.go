@@ -25,7 +25,7 @@ func TestGetEvents(t *testing.T) {
 	}
 	err = helper.InitSentry(helper.SentryConfig{
 		DSN:             os.Getenv("SENTRY_DSN"),
-		TraceSampleRate: .5,
+		TraceSampleRate: 1,
 		Release:         "development",
 		Debug:           true,
 	})

@@ -13,6 +13,7 @@ var eventsToSkip = map[go_fifa.MatchEvent]bool{
 	16:   true, // Corner kick
 	17:   true, // Blocked shot
 	18:   true, // Foul
+	20:   true, // Unknown
 	24:   true, // Throw in
 	25:   true, // Clearance
 	27:   true, // No idea

@@ -25,6 +25,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 		log.WithError(err).Warn("failed to parse LOG_LEVEL")
 		logLevel = log.InfoLevel
 	}
+	helper.InitLogging(logLevel)
 	queueURL := os.Getenv("QUEUE_URL")
 	if len(queueURL) == 0 {
 		log.Error("missing QUEUE_URL")
@@ -39,7 +40,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 
 	err = helper.InitSentry(helper.SentryConfig{
 		DSN:             os.Getenv("SENTRY_DSN"),
-		TraceSampleRate: .5,
+		TraceSampleRate: 1,
 		Release:         release,
 		Debug:           logLevel == log.DebugLevel,
 	})

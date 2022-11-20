@@ -25,7 +25,7 @@ func HandleRequest(ctx context.Context) error {
 		log.WithError(err).Warn("failed to parse LOG_LEVEL")
 		logLevel = log.InfoLevel
 	}
-
+	helper.InitLogging(logLevel)
 	tableName := os.Getenv("TABLE_NAME")
 	if len(tableName) == 0 {
 		log.Error("missing TABLE_NAME")
@@ -40,7 +40,7 @@ func HandleRequest(ctx context.Context) error {
 
 	err = helper.InitSentry(helper.SentryConfig{
 		DSN:             os.Getenv("SENTRY_DSN"),
-		TraceSampleRate: .5,
+		TraceSampleRate: 1,
 		Release:         release,
 		Debug:           logLevel == log.DebugLevel,
 	})

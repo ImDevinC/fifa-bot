@@ -34,6 +34,11 @@ type MatchOptions struct {
 }
 
 func NewSQSClient(ctx context.Context, url string) (Client, error) {
+	span := sentry.StartSpan(ctx, "queue.NewSQSClient")
+	defer span.Finish()
+
+	ctx = span.Context()
+
 	cfg, err := config.LoadDefaultConfig(ctx)
 	if err != nil {
 		sentry.CaptureException(err)

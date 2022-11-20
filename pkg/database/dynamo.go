@@ -27,7 +27,7 @@ type Client struct {
 var ErrMatchNotFound = errors.New("match not found")
 
 func NewDynamoClient(ctx context.Context, tableName string) (Client, error) {
-	span := sentry.StartSpan(ctx, "dynamo.NewDynamoClient")
+	span := sentry.StartSpan(ctx, "database.NewDynamoClient")
 	defer span.Finish()
 
 	ctx = span.Context()

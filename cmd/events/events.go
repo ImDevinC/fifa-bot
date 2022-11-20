@@ -38,7 +38,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 	}
 
 	err = helper.InitSentry(helper.SentryConfig{
-		DSN:             os.Getenv("SENTRY_DNS"),
+		DSN:             os.Getenv("SENTRY_DSN"),
 		TraceSampleRate: .5,
 		Release:         release,
 		Debug:           logLevel == log.DebugLevel,

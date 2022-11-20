@@ -63,6 +63,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 		log.WithField("sentry-trace", initialTrace).Debug("continuing trace")
 		transaction = sentry.StartTransaction(ctx, "events.HandleRequest", sentry.ContinueFromTrace(initialTrace), sentry.OpName("HandleRequest"))
 	} else {
+		log.Debug("new transaction")
 		transaction = sentry.StartTransaction(ctx, "events.HandleRequest", sentry.OpName("HandleRequest"))
 	}
 	defer transaction.Finish()

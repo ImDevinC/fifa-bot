@@ -22,7 +22,7 @@ type GetEventsConfig struct {
 }
 
 func GetEvents(ctx context.Context, config *GetEventsConfig, event events.SQSMessage) error {
-	span := sentry.StartSpan(ctx, "matches.HandleRequest")
+	span := sentry.StartSpan(ctx, "events.GetEvents")
 	defer span.Finish()
 
 	ctx = span.Context()

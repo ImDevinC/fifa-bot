@@ -144,9 +144,16 @@ func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.E
 	case go_fifa.PenaltyMissed,
 		go_fifa.PenaltyMissed2:
 		prefix = ":no_entry_sign:"
+	case go_fifa.PenaltyAwarded:
+		prefix = "Penalty awarded!"
 	}
-	fmt.Printf("[DEBUG] (%d) %s\n", evt.Type, evt.EventDescription[0].Description)
-	msg := fmt.Sprintf("%s %s %s", prefix, evt.EventDescription[0].Description, suffix)
+	var msg string
+	if len(evt.EventDescription) > 0 {
+		msg = fmt.Sprintf("%s %s %s", prefix, evt.EventDescription[0].Description, suffix)
+	} else {
+		msg = fmt.Sprintf("%s %s", prefix, suffix)
+	}
+
 	return strings.TrimSpace(msg)
 }
 

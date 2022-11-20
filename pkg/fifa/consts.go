@@ -5,17 +5,21 @@ import (
 )
 
 var eventsToSkip = map[go_fifa.MatchEvent]bool{
-	5:  true, // Substitution
-	9:  true, // Ref paused
-	10: true, // Ref resumed
-	12: true, // Goal attempt
-	15: true, // Offside
-	16: true, // Corner kick
-	17: true, // Blocked shot
-	18: true, // Foul
-	33: true, // Crossbar
-	49: true, // Free-kick post
-	57: true, // Goalie save
+	5:    true, // Substitution
+	9:    true, // Ref paused
+	10:   true, // Ref resumed
+	12:   true, // Goal attempt
+	15:   true, // Offside
+	16:   true, // Corner kick
+	17:   true, // Blocked shot
+	18:   true, // Foul
+	24:   true, // Throw in
+	25:   true, // Clearance
+	27:   true, // No idea
+	33:   true, // Crossbar
+	49:   true, // Free-kick post
+	57:   true, // Goalie save
+	9999: true, // Placeholder?
 }
 
 var flagEmojis = map[string]string{

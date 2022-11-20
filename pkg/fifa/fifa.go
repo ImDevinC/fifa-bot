@@ -97,10 +97,7 @@ func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.E
 	if _, exists := eventsToSkip[evt.Type]; exists {
 		return ""
 	}
-	if len(evt.EventDescription) == 0 {
-		return fmt.Sprintf("[EVENTINFO] Need info for event type: %d", evt.Type)
 
-	}
 	prefix := ""
 	suffix := ""
 	homeTeamFlag := flagEmojis[opts.HomeTeamAbbrev]
@@ -152,6 +149,10 @@ func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.E
 		msg = fmt.Sprintf("%s %s %s", prefix, evt.EventDescription[0].Description, suffix)
 	} else {
 		msg = fmt.Sprintf("%s %s", prefix, suffix)
+	}
+
+	if len(msg) == 0 {
+		msg = fmt.Sprintf("[EVENTINFO] Need info for event type: %d", evt.Type)
 	}
 
 	return strings.TrimSpace(msg)

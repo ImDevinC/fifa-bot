@@ -4,44 +4,16 @@ import (
 	"context"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
 	go_fifa "github.com/ImDevinC/go-fifa"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/getsentry/sentry-go"
 	"github.com/imdevinc/fifa-bot/pkg/app"
-	"github.com/imdevinc/fifa-bot/pkg/helper"
 	"github.com/imdevinc/fifa-bot/pkg/queue"
-	"github.com/joho/godotenv"
 )
 
 func TestGetEvents(t *testing.T) {
-	err := godotenv.Load("../../.env")
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-	err = helper.InitSentry(helper.SentryConfig{
-		DSN:             os.Getenv("SENTRY_DSN"),
-		TraceSampleRate: 1,
-		Release:         "development",
-		Debug:           true,
-	})
-
-	ctx := context.TODO()
-	transaction := sentry.StartTransaction(ctx, "events.HandleRequest", sentry.OpName("HandleRequest"))
-
-	if err != nil {
-		t.Error(err)
-		t.FailNow()
-	}
-
-	defer transaction.Finish()
-	span := transaction.StartChild("events.HandleRequest")
-	defer span.Finish()
-
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(`"OK`))
 	}))
@@ -83,7 +55,7 @@ func TestGetEvents(t *testing.T) {
 			},
 		},
 	}
-	err = app.GetEvents(span.Context(), &config, event)
+	err := app.GetEvents(context.TODO(), &config, event)
 	if err != nil {
 		t.Error(err)
 	}

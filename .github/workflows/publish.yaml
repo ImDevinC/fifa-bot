@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -19,13 +19,22 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: "1.19"
+      - name: Install GitVersion
+        uses: gittools/actions/gitversion/setup@v0.9.15
+        with:
+          versionSpec: '5.x'
+      - name: Execute GitVersion
+        id: gitversion
+        uses: gittools/actions/gitversion/execute@v0.9.15
       - name: Make dist
         run: make dist
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
-      - name: Terraform init
-        working-directory: terraform
-        run: terraform init
-      - name: Terraform apply
-        working-directory: terraform
-        run: terraform apply -auto-approve
+        env:
+          VERSION: ${{ steps.gitversion.outputs.semVer }}
+      # - name: Setup Terraform
+      #   uses: hashicorp/setup-terraform@v2
+      # - name: Terraform init
+      #   working-directory: terraform
+      #   run: terraform init
+      # - name: Terraform apply
+      #   working-directory: terraform
+      #   run: terraform apply -auto-approve

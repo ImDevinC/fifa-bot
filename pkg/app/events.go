@@ -47,11 +47,18 @@ func GetEvents(ctx context.Context, config *GetEventsConfig, event events.SQSMes
 	}
 	log.WithFields(fields).Debug("checking for events")
 
+	active, err := isMatchActive(ctx, config.FifaClient, &opts)
+	if err != nil {
+		sentry.CaptureException(err)
+		return fmt.Errorf("failed to determine if match is active. %w", err)
+	}
+
 	events, matchOver, err := fifa.GetMatchEvents(ctx, config.FifaClient, &opts)
 	if err != nil {
 		sentry.CaptureException(err)
 		return fmt.Errorf("failed to get match events. %w", err)
 	}
+
 	fields["lastEvent"] = opts.LastEvent
 	err = sendEventsToSlack(ctx, config.WebhookURL, events)
 	if err != nil {
@@ -60,11 +67,6 @@ func GetEvents(ctx context.Context, config *GetEventsConfig, event events.SQSMes
 	}
 	if matchOver {
 		return nil
-	}
-	active, err := isMatchActive(ctx, config.FifaClient, &opts)
-	if err != nil {
-		sentry.CaptureException(err)
-		return fmt.Errorf("failed to determine if match is active. %w", err)
 	}
 
 	if !active {

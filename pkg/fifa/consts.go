@@ -5,26 +5,28 @@ import (
 )
 
 var eventsToSkip = map[go_fifa.MatchEvent]bool{
-	go_fifa.Substitution: true, // Substitution
-	go_fifa.MatchPaused:  true, // Ref paused
-	go_fifa.MatchResumed: true, // Ref resumed
-	go_fifa.GoalAttempt:  true, // Goal attempt
-	go_fifa.Offside:      true, // Offside
-	go_fifa.CornerKick:   true, // Corner kick
-	go_fifa.ShotBlocked:  true, // Blocked shot
-	go_fifa.Foul:         true, // Foul
-	go_fifa.CoinToss:     true, // Coin BlockedShottoss
-	go_fifa.Unknown3:     true, // Unknown
-	go_fifa.ThrowIn:      true, // Throw in
-	go_fifa.Clearance:    true, // Clearance
-	go_fifa.Unknown2:     true, // No idea
-	go_fifa.Crossbar:     true, // Crossbar
-	go_fifa.FreeKickPost: true, // Free-kick post
-	go_fifa.GoalieSaved:  true, // Goalie save
-	go_fifa.Unknown:      true, // Placeholder?
+	go_fifa.Substitution: true,
+	go_fifa.MatchPaused:  true,
+	go_fifa.MatchResumed: true,
+	go_fifa.GoalAttempt:  true,
+	go_fifa.Offside:      true,
+	go_fifa.CornerKick:   true,
+	go_fifa.ShotBlocked:  true,
+	go_fifa.Foul:         true,
+	go_fifa.CoinToss:     true,
+	go_fifa.Unknown3:     true,
+	go_fifa.ThrowIn:      true,
+	go_fifa.Clearance:    true,
+	go_fifa.Unknown2:     true,
+	go_fifa.Crossbar:     true,
+	go_fifa.FreeKickPost: true,
+	go_fifa.GoalieSaved:  true,
+	go_fifa.Unknown:      true,
+	go_fifa.DroppedBall:  true,
 }
 
 var flagEmojis = map[string]string{
+	"ALB": ":flag-al:",
 	"ARG": ":flag-ar:",
 	"AUS": ":flag-au:",
 	"BEL": ":flag-be:",

@@ -2,6 +2,8 @@ package app_test
 
 import (
 	"context"
+	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -15,6 +17,8 @@ import (
 
 func TestGetEvents(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		fmt.Println(string(body))
 		w.Write([]byte(`"OK`))
 	}))
 	defer s.Close()
@@ -27,16 +31,16 @@ func TestGetEvents(t *testing.T) {
 	event := events.SQSMessage{
 		MessageAttributes: map[string]events.SQSMessageAttribute{
 			"CompetitionId": {
-				StringValue: aws.String("cesdwwnxbc5fmajgroc0hqzy2"),
+				StringValue: aws.String("17"),
 			},
 			"SeasonId": {
-				StringValue: aws.String("40sncpbsyexdrmedcwjz1j0gk"),
+				StringValue: aws.String("255711"),
 			},
 			"StageId": {
-				StringValue: aws.String("5w0vi7wp50objhjfn51o5ck5w"),
+				StringValue: aws.String("285063"),
 			},
 			"MatchId": {
-				StringValue: aws.String("3qxv1fe65nezrara3zsm5s55g"),
+				StringValue: aws.String("400235463"),
 			},
 			"HomeTeamName": {
 				StringValue: aws.String("Albania"),

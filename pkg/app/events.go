@@ -47,11 +47,13 @@ func GetEvents(ctx context.Context, config *GetEventsConfig, event events.SQSMes
 	}
 	log.WithFields(fields).Debug("checking for events")
 
-	active, err := isMatchActive(ctx, config.FifaClient, &opts)
-	if err != nil {
-		sentry.CaptureException(err)
-		return fmt.Errorf("failed to determine if match is active. %w", err)
-	}
+	// This is causing issues, let's revisit later after the World Cup
+	// because matches are being unmonitored too early
+	// active, err := isMatchActive(ctx, config.FifaClient, &opts)
+	// if err != nil {
+	// 	sentry.CaptureException(err)
+	// 	return fmt.Errorf("failed to determine if match is active. %w", err)
+	// }
 
 	events, matchOver, err := fifa.GetMatchEvents(ctx, config.FifaClient, &opts)
 	if err != nil {
@@ -69,10 +71,10 @@ func GetEvents(ctx context.Context, config *GetEventsConfig, event events.SQSMes
 		return nil
 	}
 
-	if !active {
-		log.WithFields(fields).Warn("match was not marked as completed, but is no longer live")
-		return nil
-	}
+	// if !active {
+	// 	log.WithFields(fields).Warn("match was not marked as completed, but is no longer live")
+	// 	return nil
+	// }
 
 	err = config.QueueClient.SendToQueue(ctx, &opts)
 	if err != nil {

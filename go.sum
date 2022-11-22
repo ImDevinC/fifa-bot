@@ -18,6 +18,8 @@ github.com/ImDevinC/go-fifa v0.0.0-20221120174243-6ab31eef7782 h1:K5XjpFBxAv+h07
 github.com/ImDevinC/go-fifa v0.0.0-20221120174243-6ab31eef7782/go.mod h1:hkouxmHWRSA9l0EuV0xCDRn7Pf3vAUVeh8ZH2pq4EtU=
 github.com/ImDevinC/go-fifa v0.0.0-20221120174457-883d48d0eef8 h1:xUQ0VPHpsMLAK64/ANg9ReKdlmSqkclA48Po/4DqyTg=
 github.com/ImDevinC/go-fifa v0.0.0-20221120174457-883d48d0eef8/go.mod h1:hkouxmHWRSA9l0EuV0xCDRn7Pf3vAUVeh8ZH2pq4EtU=
+github.com/ImDevinC/go-fifa v0.0.0-20221122192024-258c462d6bcd h1:w1BgWC16aq9cF7CxH5ueselV1Xx9k+QKQ/Vahdw8idg=
+github.com/ImDevinC/go-fifa v0.0.0-20221122192024-258c462d6bcd/go.mod h1:hkouxmHWRSA9l0EuV0xCDRn7Pf3vAUVeh8ZH2pq4EtU=
 github.com/aws/aws-lambda-go v1.34.1 h1:M3a/uFYBjii+tDcOJ0wL/WyFi2550FHoECdPf27zvOs=
 github.com/aws/aws-lambda-go v1.34.1/go.mod h1:jwFe2KmMsHmffA1X2R09hH6lFzJQxzI8qK17ewzbQMM=
 github.com/aws/aws-sdk-go-v2 v1.17.1 h1:02c72fDJr87N8RAC2s3Qu0YuvMRZKNZJ9F+lAehCazk=

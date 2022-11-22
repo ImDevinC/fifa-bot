@@ -3,7 +3,7 @@ module github.com/imdevinc/fifa-bot
 go 1.19
 
 require (
-	github.com/ImDevinC/go-fifa v0.0.0-20221120174457-883d48d0eef8
+	github.com/ImDevinC/go-fifa v0.0.0-20221122192024-258c462d6bcd
 	github.com/aws/aws-lambda-go v1.34.1
 	github.com/aws/aws-sdk-go-v2 v1.17.1
 	github.com/aws/aws-sdk-go-v2/config v1.18.0

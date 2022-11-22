@@ -151,11 +151,15 @@ func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.E
 		msg = fmt.Sprintf("%s %s", prefix, suffix)
 	}
 
+	msg = strings.TrimSpace(msg)
+
 	if len(msg) == 0 {
 		msg = fmt.Sprintf("[EVENTINFO] Need info for event type: %d", evt.Type)
+	} else {
+		msg = fmt.Sprintf("%s %s", evt.MatchMinute, msg)
 	}
 
-	return strings.TrimSpace(msg)
+	return msg
 }
 
 type Goals struct {

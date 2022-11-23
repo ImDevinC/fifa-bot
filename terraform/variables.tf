@@ -1,7 +1,7 @@
 variable "encrypted_slack_url" {
   type        = string
   description = "KMS Encrypted Slack Webhook URL"
-  default     = "AQICAHgsJXuUfVcivglHv1qjCTscwl6NzhvBut8NdXoUXyTZ4gE4gg5CPEm6Iia0eM9ECNlJAAAAszCBsAYJKoZIhvcNAQcGoIGiMIGfAgEAMIGZBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDM4HLQFcf2++ULSBVgIBEIBsbDLTWOnPFIaQIGXf+zchb03IvMpSmW0rpEPkfbnJYPUwK86RbGbsFgivjSFGwjcPjOiioy0PtzwayRh6u509CLqCp5s3mdpx/drxOhJ+hoPei6WygG9dJnjCPtMja36rq+tF79BnhdEmnvQh"
+  default     = "AQICAHgsJXuUfVcivglHv1qjCTscwl6NzhvBut8NdXoUXyTZ4gEyPnEVzAsaiF+AdBYY4pDYAAAAszCBsAYJKoZIhvcNAQcGoIGiMIGfAgEAMIGZBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDC2msURpIstFV960cwIBEIBsdah/Yotpy0W5YOfKKiD4Ca5UNQPsbQ2LYT6fWxswGkGssBtVC42AqcKrA4Me2Ay+UmgW5p/cq82mJDIRJLrmY9gTkqCk9vfX1UmypwIpem5l+MY8/NPyug6GCyalcsEpY9zq4SCT5GdkS5Co"
 }
 
 variable "encrypted_sentry_dsn_events" {

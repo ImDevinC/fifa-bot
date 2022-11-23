@@ -22,7 +22,8 @@ type GetEventsConfig struct {
 }
 
 func GetEvents(ctx context.Context, config *GetEventsConfig, event events.SQSMessage) error {
-	span := sentry.StartSpan(ctx, "events.GetEvents")
+	span := sentry.StartSpan(ctx, "function")
+	span.Description = "events.GetEvents"
 	defer span.Finish()
 
 	ctx = span.Context()
@@ -47,14 +48,6 @@ func GetEvents(ctx context.Context, config *GetEventsConfig, event events.SQSMes
 	}
 	log.WithFields(fields).Debug("checking for events")
 
-	// This is causing issues, let's revisit later after the World Cup
-	// because matches are being unmonitored too early
-	// active, err := isMatchActive(ctx, config.FifaClient, &opts)
-	// if err != nil {
-	// 	sentry.CaptureException(err)
-	// 	return fmt.Errorf("failed to determine if match is active. %w", err)
-	// }
-
 	events, matchOver, err := fifa.GetMatchEvents(ctx, config.FifaClient, &opts)
 	if err != nil {
 		sentry.CaptureException(err)
@@ -70,11 +63,6 @@ func GetEvents(ctx context.Context, config *GetEventsConfig, event events.SQSMes
 	if matchOver {
 		return nil
 	}
-
-	// if !active {
-	// 	log.WithFields(fields).Warn("match was not marked as completed, but is no longer live")
-	// 	return nil
-	// }
 
 	err = config.QueueClient.SendToQueue(ctx, &opts)
 	if err != nil {
@@ -92,8 +80,10 @@ type SlackMessage struct {
 // sendEventsToSlack sends the payload to the webhookURL. This expects the message to
 // be a raw string that will be sent as the `text: ` value in a slack message
 func sendEventsToSlack(ctx context.Context, webhookURL string, events []string) error {
-	span := sentry.StartSpan(ctx, "events.sendEventsToSlack")
+	span := sentry.StartSpan(ctx, "function")
 	defer span.Finish()
+	span.Description = "events.sendEventsToSlack"
+
 	for _, evt := range events {
 		payload := SlackMessage{Text: evt}
 		b, err := json.Marshal(payload)
@@ -108,25 +98,4 @@ func sendEventsToSlack(ctx context.Context, webhookURL string, events []string) 
 		}
 	}
 	return nil
-}
-
-// isMatchActive checks the active matches to see if the match still exists by checking
-// for the matchId, competitionId, stageId, and seasonId
-func isMatchActive(ctx context.Context, client *go_fifa.Client, opts *queue.MatchOptions) (bool, error) {
-	span := sentry.StartSpan(ctx, "events.isMatchActive")
-	defer span.Finish()
-
-	matches, err := client.GetCurrentMatches()
-	if err != nil {
-		sentry.CaptureException(err)
-		return false, err
-	}
-	var matchFound bool = false
-	for _, m := range matches {
-		if m.Id == opts.MatchId && m.CompetitionId == opts.CompetitionId && m.StageId == opts.StageId && m.SeasonId == opts.SeasonId {
-			matchFound = true
-			break
-		}
-	}
-	return matchFound, nil
 }

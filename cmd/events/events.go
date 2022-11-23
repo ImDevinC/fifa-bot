@@ -62,17 +62,15 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 
 	if len(initialTrace) > 0 {
 		log.WithField("sentry-trace", initialTrace).Debug("continuing trace")
-		transaction = sentry.StartTransaction(ctx, "events.HandleRequest", sentry.ContinueFromTrace(initialTrace), sentry.OpName("HandleRequest"))
+		transaction = sentry.StartTransaction(ctx, "function.aws", sentry.ContinueFromTrace(initialTrace), sentry.OpName("function.aws"))
 	} else {
 		log.Debug("new transaction")
-		transaction = sentry.StartTransaction(ctx, "events.HandleRequest", sentry.OpName("HandleRequest"))
+		transaction = sentry.StartTransaction(ctx, "function.aws", sentry.OpName("funtion.aws"))
 	}
 	defer transaction.Finish()
+	transaction.Description = "events.HandleRequest"
 
-	span := transaction.StartChild("events.HandleRequest")
-	defer span.Finish()
-
-	ctx = span.Context()
+	ctx = transaction.Context()
 
 	sqsClient, err := queue.NewSQSClient(ctx, queueURL)
 	if err != nil {

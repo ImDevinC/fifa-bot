@@ -12,8 +12,9 @@ import (
 )
 
 func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]queue.MatchOptions, error) {
-	span := sentry.StartSpan(ctx, "fifa.GetLiveMatches")
+	span := sentry.StartSpan(ctx, "function")
 	defer span.Finish()
+	span.Description = "fifa.GetLiveMatches"
 
 	matches, err := fifaClient.GetCurrentMatches()
 	if err != nil {
@@ -38,8 +39,9 @@ func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]queue.Ma
 }
 
 func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue.MatchOptions) ([]string, bool, error) {
-	span := sentry.StartSpan(ctx, "fifa.GetMatchEvents")
+	span := sentry.StartSpan(ctx, "function")
 	defer span.Finish()
+	span.Description = "fifa.GetMatchEvents"
 
 	ctx = span.Context()
 
@@ -89,8 +91,9 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 }
 
 func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.EventResponse, opts *queue.MatchOptions) string {
-	span := sentry.StartSpan(ctx, "fifa.processEvents")
+	span := sentry.StartSpan(ctx, "function")
 	defer span.Finish()
+	span.Description = "fifa.processEvents"
 
 	ctx = span.Context()
 
@@ -168,8 +171,9 @@ type Goals struct {
 }
 
 func getMatchScores(ctx context.Context, fifaClient *go_fifa.Client, opts *queue.MatchOptions) (Goals, error) {
-	span := sentry.StartSpan(ctx, "fifa.getMatchScores")
+	span := sentry.StartSpan(ctx, "function")
 	defer span.Finish()
+	span.Description = "fifa.getMatchScores"
 
 	match, err := fifaClient.GetMatchData(&go_fifa.GetMatchDataOptions{
 		CompetitionId: opts.CompetitionId,

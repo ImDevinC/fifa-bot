@@ -21,8 +21,9 @@ type GetMatchesConfig struct {
 }
 
 func GetMatches(ctx context.Context, config *GetMatchesConfig) error {
-	span := sentry.StartSpan(ctx, "matches.GetMatches")
+	span := sentry.StartSpan(ctx, "function")
 	defer span.Finish()
+	span.Description = "matches.GetMatches"
 
 	ctx = span.Context()
 

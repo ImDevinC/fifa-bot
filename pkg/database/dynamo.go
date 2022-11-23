@@ -27,8 +27,9 @@ type Client struct {
 var ErrMatchNotFound = errors.New("match not found")
 
 func NewDynamoClient(ctx context.Context, tableName string) (Client, error) {
-	span := sentry.StartSpan(ctx, "database.NewDynamoClient")
+	span := sentry.StartSpan(ctx, "db.init")
 	defer span.Finish()
+	span.Description = "database.NewDynamoClient"
 
 	ctx = span.Context()
 
@@ -45,8 +46,9 @@ func NewDynamoClient(ctx context.Context, tableName string) (Client, error) {
 }
 
 func (d *Client) DoesMatchExist(ctx context.Context, opts *queue.MatchOptions) error {
-	span := sentry.StartSpan(ctx, "dynamo.DoesMatchExist")
+	span := sentry.StartSpan(ctx, "db.query")
 	defer span.Finish()
+	span.Description = "database.DoesMatchExist"
 
 	ctx = span.Context()
 
@@ -70,8 +72,9 @@ func (d *Client) DoesMatchExist(ctx context.Context, opts *queue.MatchOptions) e
 }
 
 func (d *Client) AddMatch(ctx context.Context, opts *queue.MatchOptions) error {
-	span := sentry.StartSpan(ctx, "dynamo.AddMatch")
+	span := sentry.StartSpan(ctx, "db.query")
 	defer span.Finish()
+	span.Description = "database.AddMatch"
 
 	ctx = span.Context()
 
@@ -95,25 +98,3 @@ func (d *Client) AddMatch(ctx context.Context, opts *queue.MatchOptions) error {
 	}
 	return nil
 }
-
-// func (d *DatabaseClient) DeleteMatch(ctx context.Context, opts *queue.MatchOptions) error {
-// 	span := sentry.StartSpan(ctx, "dynamo.DeleteMatch")
-// 	defer span.Finish()
-
-// 	ctx = span.Context()
-
-// 	input := &dynamodb.DeleteItemInput{
-// 		TableName: &d.tableName,
-// 		Key: map[string]types.AttributeValue{
-// 			"MatchId": &types.AttributeValueMemberS{
-// 				Value: opts.MatchId,
-// 			},
-// 		},
-// 	}
-// 	_, err := d.ddbClient.DeleteItem(ctx, input)
-// 	if err != nil {
-// 		sentry.CaptureException(err)
-// 		return fmt.Errorf("failed to delete item from dynamo. %w", err)
-// 	}
-// 	return nil
-// }

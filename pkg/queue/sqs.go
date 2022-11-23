@@ -34,8 +34,9 @@ type MatchOptions struct {
 }
 
 func NewSQSClient(ctx context.Context, url string) (Client, error) {
-	span := sentry.StartSpan(ctx, "queue.NewSQSClient")
+	span := sentry.StartSpan(ctx, "queue.init")
 	defer span.Finish()
+	span.Description = "queue.NewSQSClient"
 
 	ctx = span.Context()
 
@@ -49,8 +50,9 @@ func NewSQSClient(ctx context.Context, url string) (Client, error) {
 }
 
 func MatchOptsFromSQS(ctx context.Context, attributes map[string]events.SQSMessageAttribute) MatchOptions {
-	span := sentry.StartSpan(ctx, "sqs.MatchOptsFromSQS")
+	span := sentry.StartSpan(ctx, "function")
 	defer span.Finish()
+	span.Description = "queue.MatchOptsFromSQS"
 
 	opts := MatchOptions{
 		CompetitionId: *attributes["CompetitionId"].StringValue,
@@ -74,8 +76,10 @@ func MatchOptsFromSQS(ctx context.Context, attributes map[string]events.SQSMessa
 }
 
 func (c *Client) SendToQueue(ctx context.Context, opts *MatchOptions) error {
-	span := sentry.StartSpan(ctx, "sqs.SendToQueue")
+	span := sentry.StartSpan(ctx, "queue.submit")
 	defer span.Finish()
+	span.Description = "queue.SendToQueue"
+
 	ctx = span.Context()
 
 	input := &sqs.SendMessageInput{

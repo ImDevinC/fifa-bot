@@ -52,13 +52,11 @@ func HandleRequest(ctx context.Context) error {
 
 	defer sentry.Flush(2 * time.Second)
 
-	transaction := sentry.StartTransaction(ctx, "matches.HandleRequest", sentry.OpName("HandleRequest"))
+	transaction := sentry.StartTransaction(ctx, "function.aws", sentry.OpName("function.aws"))
 	defer transaction.Finish()
+	transaction.Description = "matches.HandleRequest"
 
-	span := transaction.StartChild("matches.HandleRequest")
-	defer span.Finish()
-
-	ctx = span.Context()
+	ctx = transaction.Context()
 
 	sqsClient, err := queue.NewSQSClient(ctx, queueURL)
 	if err != nil {
@@ -91,5 +89,9 @@ func HandleRequest(ctx context.Context) error {
 }
 
 func main() {
-	lambda.Start(HandleRequest)
+	if _, exists := os.LookupEnv("AWS_LAMBDA_RUNTIME_API"); exists {
+		lambda.Start(HandleRequest)
+	} else {
+		HandleRequest(context.Background())
+	}
 }

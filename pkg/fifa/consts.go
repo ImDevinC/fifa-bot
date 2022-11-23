@@ -23,6 +23,7 @@ var eventsToSkip = map[go_fifa.MatchEvent]bool{
 	go_fifa.GoalieSaved:  true,
 	go_fifa.Unknown:      true,
 	go_fifa.DroppedBall:  true,
+	go_fifa.Assist:       true,
 }
 
 var flagEmojis = map[string]string{

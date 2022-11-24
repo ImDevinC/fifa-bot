@@ -42,6 +42,11 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	span := sentry.StartSpan(ctx, "function")
 	defer span.Finish()
 	span.Description = "fifa.GetMatchEvents"
+	span.SetTag("competitionId", opts.CompetitionId)
+	span.SetTag("seasonId", opts.SeasonId)
+	span.SetTag("stageId", opts.StageId)
+	span.SetTag("matchId", opts.MatchId)
+	span.SetTag("lastEvent", opts.LastEvent)
 
 	ctx = span.Context()
 
@@ -94,7 +99,8 @@ func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.E
 	span := sentry.StartSpan(ctx, "function")
 	defer span.Finish()
 	span.Description = "fifa.processEvents"
-
+	span.SetTag("eventId", evt.Id)
+	span.SetTag("eventType", fmt.Sprintf("%d", int(evt.Type)))
 	ctx = span.Context()
 
 	if _, exists := eventsToSkip[evt.Type]; exists {
@@ -174,6 +180,10 @@ func getMatchScores(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	span := sentry.StartSpan(ctx, "function")
 	defer span.Finish()
 	span.Description = "fifa.getMatchScores"
+	span.SetTag("competitionId", opts.CompetitionId)
+	span.SetTag("seasonId", opts.SeasonId)
+	span.SetTag("stageId", opts.StageId)
+	span.SetTag("matchId", opts.MatchId)
 
 	match, err := fifaClient.GetMatchData(&go_fifa.GetMatchDataOptions{
 		CompetitionId: opts.CompetitionId,

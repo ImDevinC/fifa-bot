@@ -40,7 +40,7 @@ func TestGetEvents(t *testing.T) {
 				StringValue: aws.String("285063"),
 			},
 			"MatchId": {
-				StringValue: aws.String("400235493"),
+				StringValue: aws.String("400235484"),
 			},
 			"HomeTeamName": {
 				StringValue: aws.String("Albania"),

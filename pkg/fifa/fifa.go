@@ -167,7 +167,7 @@ func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.E
 	} else {
 		msg = fmt.Sprintf("%s %s", evt.MatchMinute, msg)
 	}
-
+	span.Description = msg
 	return msg
 }
 

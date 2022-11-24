@@ -68,6 +68,7 @@ func GetMatches(ctx context.Context, config *GetMatchesConfig) error {
 			continue
 		}
 	}
+
 	if len(errWrap) > 0 {
 		return errors.New(strings.Join(errWrap, "\n"))
 	}

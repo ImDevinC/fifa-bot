@@ -82,12 +82,12 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 			}
 		}
 		if evt.Type == go_fifa.Unknown {
+			placeholderFound = true
 			continue // Let's trying skipping here to see if we can catch up to 9999
 		}
 		opts.LastEvent = evt.Id
 		resp := processEvent(ctx, fifaClient, evt, opts)
 		if resp == "" {
-			placeholderFound = true
 			continue
 		}
 		returnValue = append(returnValue, resp)

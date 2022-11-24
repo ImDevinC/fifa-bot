@@ -63,7 +63,6 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	var returnValue []string
 	var lastEventFound = false
 	var matchOver = false
-	var placeholderFound = false
 
 	// -1 means the event just came over from the match watcher
 	if opts.LastEvent == "-1" {
@@ -81,10 +80,6 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 				continue
 			}
 		}
-		if evt.Type == go_fifa.Unknown {
-			placeholderFound = true
-			continue // Let's trying skipping here to see if we can catch up to 9999
-		}
 		opts.LastEvent = evt.Id
 		resp := processEvent(ctx, fifaClient, evt, opts)
 		if resp == "" {
@@ -92,12 +87,11 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 		}
 		returnValue = append(returnValue, resp)
 	}
-	span.SetTag("placeholderFound", fmt.Sprintf("%t", placeholderFound))
 	// If an event gets deleted, we may not find it above. In that case,
 	// let's just reset to the most recent event
-	// if !placeholderFound && opts.LastEvent != "0" && !lastEventFound && len(events.Events) > 0 {
-	// 	opts.LastEvent = events.Events[len(events.Events)-1].Id
-	// }
+	if opts.LastEvent != "0" && !lastEventFound && len(events.Events) > 0 {
+		opts.LastEvent = events.Events[len(events.Events)-1].Id
+	}
 	return returnValue, matchOver, nil
 }
 

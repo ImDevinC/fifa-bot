@@ -80,6 +80,9 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 				continue
 			}
 		}
+		if evt.Type == go_fifa.Unknown {
+			continue
+		}
 		opts.LastEvent = evt.Id
 		resp := processEvent(ctx, fifaClient, evt, opts)
 		if resp == "" {
@@ -167,7 +170,7 @@ func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.E
 	} else {
 		msg = fmt.Sprintf("%s %s", evt.MatchMinute, msg)
 	}
-	span.Description = msg
+
 	return msg
 }
 

@@ -76,6 +76,7 @@ var flagEmojis = map[string]string{
 	"THA": ":flag-th:",
 	"TUN": ":flag-tn:",
 	"URU": ":flag-uy:",
+	"USA": ":flag-us:",
 	"WAL": ":flag-wales:",
 	"ZAF": ":flag-za:",
 }

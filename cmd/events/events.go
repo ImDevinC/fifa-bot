@@ -53,7 +53,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 	defer sentry.Flush(2 * time.Second)
 
 	var initialTrace string
-	var transaction *sentry.Span
+	var span *sentry.Span
 	if len(event.Records) > 0 {
 		if val, exists := event.Records[0].MessageAttributes["TraceId"]; exists {
 			initialTrace = *val.StringValue
@@ -62,15 +62,15 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 
 	if len(initialTrace) > 0 {
 		log.WithField("sentry-trace", initialTrace).Debug("continuing trace")
-		transaction = sentry.StartTransaction(ctx, "function.aws", sentry.ContinueFromTrace(initialTrace), sentry.OpName("function.aws"))
+		span = sentry.StartSpan(ctx, "function.aws", sentry.ContinueFromTrace(initialTrace), sentry.TransactionName("HandleRequest"))
 	} else {
 		log.Debug("new transaction")
-		transaction = sentry.StartTransaction(ctx, "function.aws", sentry.OpName("funtion.aws"))
+		span = sentry.StartSpan(ctx, "function.aws", sentry.TransactionName("HandleRequest"))
 	}
-	defer transaction.Finish()
-	transaction.Description = "events.HandleRequest"
+	defer span.Finish()
+	span.Description = "events.HandleRequest"
 
-	ctx = transaction.Context()
+	ctx = span.Context()
 
 	sqsClient, err := queue.NewSQSClient(ctx, queueURL)
 	if err != nil {

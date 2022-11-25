@@ -52,11 +52,11 @@ func HandleRequest(ctx context.Context) error {
 
 	defer sentry.Flush(2 * time.Second)
 
-	transaction := sentry.StartTransaction(ctx, "function.aws", sentry.OpName("function.aws"))
-	defer transaction.Finish()
-	transaction.Description = "matches.HandleRequest"
+	span := sentry.StartSpan(ctx, "function.aws", sentry.TransactionName("HandleRequest"))
+	defer span.Finish()
+	span.Description = "matches.HandleRequest"
 
-	ctx = transaction.Context()
+	ctx = span.Context()
 
 	sqsClient, err := queue.NewSQSClient(ctx, queueURL)
 	if err != nil {

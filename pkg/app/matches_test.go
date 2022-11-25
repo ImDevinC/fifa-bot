@@ -50,7 +50,7 @@ func TestMatches(t *testing.T) {
 		}},
 		QueueClient: &queue.Client{Queue: &TestQueue{}},
 	}
-	err := app.GetMatches(context.TODO(), &config)
+	err := app.GetMatches(context.Background(), &config)
 	if err != nil {
 		t.Error(err)
 	}

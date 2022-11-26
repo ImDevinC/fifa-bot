@@ -16,11 +16,15 @@ func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]queue.Ma
 	defer span.Finish()
 	span.Description = "fifa.GetLiveMatches"
 
+	childSpan := sentry.StartSpan(ctx, "http")
+	span.Description = "go-fifa.GetCurrentMatches"
 	matches, err := fifaClient.GetCurrentMatches()
 	if err != nil {
 		sentry.CaptureException(err)
+		childSpan.Finish()
 		return nil, err
 	}
+	childSpan.Finish()
 	var returnValue []queue.MatchOptions
 	for _, m := range matches {
 		returnValue = append(returnValue, queue.MatchOptions{
@@ -50,6 +54,12 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 
 	ctx = span.Context()
 
+	childSpan := sentry.StartSpan(ctx, "http")
+	childSpan.Description = "go-fifa.GetMatchEvents"
+	childSpan.SetTag("competitionId", opts.CompetitionId)
+	childSpan.SetTag("seasonId", opts.SeasonId)
+	childSpan.SetTag("stageId", opts.StageId)
+	childSpan.SetTag("matchId", opts.MatchId)
 	events, err := fifaClient.GetMatchEvents(&go_fifa.GetMatchEventOptions{
 		CompetitionId: opts.CompetitionId,
 		SeasonId:      opts.SeasonId,
@@ -58,8 +68,10 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	})
 	if err != nil {
 		sentry.CaptureException(err)
+		childSpan.Finish()
 		return nil, false, fmt.Errorf("failed to get match events. %w", err)
 	}
+	childSpan.Finish()
 	var returnValue []string
 	var lastEventFound = false
 	var matchOver = false
@@ -185,6 +197,8 @@ func getMatchScores(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	span.SetTag("stageId", opts.StageId)
 	span.SetTag("matchId", opts.MatchId)
 
+	childSpan := sentry.StartSpan(ctx, "http")
+	childSpan.Description = "go-fifa.GetMatchData"
 	match, err := fifaClient.GetMatchData(&go_fifa.GetMatchDataOptions{
 		CompetitionId: opts.CompetitionId,
 		SeasonId:      opts.SeasonId,
@@ -193,7 +207,9 @@ func getMatchScores(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	})
 	if err != nil {
 		sentry.CaptureException(err)
+		childSpan.Finish()
 		return Goals{}, err
 	}
+	childSpan.Finish()
 	return Goals{Home: match.HomeTeam.Score, Away: match.AwayTeam.Score}, nil
 }

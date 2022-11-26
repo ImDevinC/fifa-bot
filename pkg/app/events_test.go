@@ -40,19 +40,19 @@ func TestGetEvents(t *testing.T) {
 				StringValue: aws.String("285063"),
 			},
 			"MatchId": {
-				StringValue: aws.String("400235484"),
+				StringValue: aws.String("400235462"),
 			},
 			"HomeTeamName": {
-				StringValue: aws.String("Albania"),
+				StringValue: aws.String("Mexico"),
 			},
 			"AwayTeamName": {
-				StringValue: aws.String("Italy"),
+				StringValue: aws.String("Argentina"),
 			},
 			"HomeTeamAbbrev": {
-				StringValue: aws.String("ALB"),
+				StringValue: aws.String("MEX"),
 			},
 			"AwayTeamAbbrev": {
-				StringValue: aws.String("ITA"),
+				StringValue: aws.String("ARG"),
 			},
 			"LastEvent": {
 				StringValue: aws.String("0"),

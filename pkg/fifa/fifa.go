@@ -2,14 +2,12 @@ package fifa
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"strings"
 
 	go_fifa "github.com/ImDevinC/go-fifa"
 	"github.com/getsentry/sentry-go"
 	"github.com/imdevinc/fifa-bot/pkg/queue"
-	log "github.com/sirupsen/logrus"
 )
 
 func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]queue.MatchOptions, error) {
@@ -114,7 +112,6 @@ func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.E
 	span.Description = "fifa.processEvents"
 	span.SetTag("eventId", evt.Id)
 	span.SetTag("eventType", fmt.Sprintf("%d", int(evt.Type)))
-	ctx = span.Context()
 
 	if _, exists := eventsToSkip[evt.Type]; exists {
 		return ""
@@ -124,20 +121,6 @@ func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.E
 	suffix := ""
 	homeTeamFlag := flagEmojis[opts.HomeTeamAbbrev]
 	awayTeamFlag := flagEmojis[opts.AwayTeamAbbrev]
-	goals := Goals{}
-	switch evt.Type {
-	case go_fifa.MatchEnd,
-		go_fifa.HalfEnd:
-		teamGoals, err := getMatchScores(ctx, fifaClient, opts)
-		if err != nil {
-			sentry.CaptureException(err)
-			log.WithError(err).Error("failed to get scores")
-			goals.Away = 0
-			goals.Home = 0
-		} else {
-			goals = teamGoals
-		}
-	}
 	switch evt.Type {
 	case go_fifa.GoalScore,
 		go_fifa.OwnGoal,
@@ -156,10 +139,10 @@ func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.E
 		suffix = fmt.Sprintf("%s %s vs %s %s", opts.HomeTeamName, homeTeamFlag, awayTeamFlag, opts.AwayTeamName)
 	case go_fifa.MatchEnd:
 		prefix = ":clock12:"
-		suffix = fmt.Sprintf("%d %s %s : %s %s %d", goals.Home, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, goals.Away)
+		suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayGoals)
 	case go_fifa.HalfEnd:
 		prefix = ":clock1230:"
-		suffix = fmt.Sprintf("%d %s %s : %s %s %d", goals.Home, opts.HomeTeamName, homeTeamFlag, awayTeamFlag, opts.AwayTeamName, goals.Away)
+		suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamName, homeTeamFlag, awayTeamFlag, opts.AwayTeamName, evt.AwayGoals)
 	case go_fifa.PenaltyMissed,
 		go_fifa.PenaltyMissed2:
 		prefix = ":no_entry_sign:"
@@ -182,42 +165,4 @@ func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.E
 	}
 
 	return msg
-}
-
-type Goals struct {
-	Home int
-	Away int
-}
-
-func getMatchScores(ctx context.Context, fifaClient *go_fifa.Client, opts *queue.MatchOptions) (Goals, error) {
-	span := sentry.StartSpan(ctx, "function")
-	defer span.Finish()
-	span.Description = "fifa.getMatchScores"
-	span.SetTag("competitionId", opts.CompetitionId)
-	span.SetTag("seasonId", opts.SeasonId)
-	span.SetTag("stageId", opts.StageId)
-	span.SetTag("matchId", opts.MatchId)
-
-	childSpan := sentry.StartSpan(ctx, "http")
-	childSpan.Description = "go-fifa.GetMatchData"
-	matches, err := fifaClient.GetMatches(&go_fifa.GetMatchesOptions{
-		CompetitionId: opts.CompetitionId,
-		SeasonId:      opts.SeasonId,
-		StageId:       opts.StageId,
-		MatchId:       opts.MatchId,
-		Count:         1,
-	})
-	if err != nil {
-		sentry.CaptureException(err)
-		childSpan.Finish()
-		return Goals{}, err
-	}
-	childSpan.Finish()
-	if len(matches) != 1 {
-		err := errors.New("not enough matches found")
-		sentry.CaptureException(err)
-		return Goals{}, err
-	}
-	match := matches[0]
-	return Goals{Home: match.HomeTeamScore, Away: match.AwayTeamScore}, nil
 }

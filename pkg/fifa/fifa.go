@@ -32,7 +32,7 @@ func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]queue.Ma
 			CompetitionId:  m.CompetitionId,
 			SeasonId:       m.SeasonId,
 			StageId:        m.StageId,
-			MatchId:        m.Id,
+			MatchId:        m.MatchId,
 			LastEvent:      "",
 			HomeTeamName:   m.HomeTeam.Name[0].Description,
 			AwayTeamName:   m.AwayTeam.Name[0].Description,

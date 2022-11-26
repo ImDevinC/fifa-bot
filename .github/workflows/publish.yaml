@@ -19,8 +19,22 @@ jobs:
         uses: actions/setup-go@v3
         with:
           go-version: "1.19"
+      - name: Get next version
+        id: semver
+        uses: ietf-tools/semver-action@v1
+        with:
+          patchAll: true
+          token: ${{ github.token }}
+          branch: main
       - name: Make dist
-        run: make dist
+        run: VERSION=${{ steps.semver.outputs.next }} make dist
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          draft: false
+          name: ${{ steps.semver.outputs.next }}
+          tag: ${{ steps.semver.outputs.next }}
+          token: ${{ github.token }}
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
       - name: Terraform init

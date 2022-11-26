@@ -3,12 +3,15 @@ module github.com/imdevinc/fifa-bot
 go 1.19
 
 require (
-	github.com/ImDevinC/go-fifa v0.0.0-20221123194624-e568cf8e16c5
+	github.com/ImDevinC/go-fifa v0.0.0-20221126045836-8e80cb0bd5dd
 	github.com/aws/aws-lambda-go v1.34.1
 	github.com/aws/aws-sdk-go-v2 v1.17.1
 	github.com/aws/aws-sdk-go-v2/config v1.18.0
 	github.com/aws/aws-sdk-go-v2/service/dynamodb v1.17.4
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.19.13
+	github.com/getsentry/sentry-go v0.15.0
+	github.com/google/go-cmp v0.5.9
+	github.com/sirupsen/logrus v1.9.0
 )
 
 require (
@@ -24,22 +27,10 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/ssooidc v1.13.8 // indirect
 	github.com/aws/aws-sdk-go-v2/service/sts v1.17.2 // indirect
 	github.com/aws/smithy-go v1.13.4 // indirect
-	github.com/getsentry/sentry-go v0.15.0 // indirect
-	github.com/go-logr/logr v1.2.3 // indirect
-	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/joho/godotenv v1.4.0 // indirect
-	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/stretchr/testify v1.8.0 // indirect
-	go.opentelemetry.io/otel v1.11.1 // indirect
-	go.opentelemetry.io/otel/sdk v1.11.1 // indirect
-	go.opentelemetry.io/otel/trace v1.11.1 // indirect
-	go.uber.org/atomic v1.10.0 // indirect
-	go.uber.org/multierr v1.8.0 // indirect
-	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect
 	golang.org/x/text v0.4.0 // indirect
 )

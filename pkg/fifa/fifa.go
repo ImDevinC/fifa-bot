@@ -2,6 +2,7 @@ package fifa
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -199,11 +200,12 @@ func getMatchScores(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 
 	childSpan := sentry.StartSpan(ctx, "http")
 	childSpan.Description = "go-fifa.GetMatchData"
-	match, err := fifaClient.GetMatchData(&go_fifa.GetMatchDataOptions{
+	matches, err := fifaClient.GetMatches(&go_fifa.GetMatchesOptions{
 		CompetitionId: opts.CompetitionId,
 		SeasonId:      opts.SeasonId,
 		StageId:       opts.StageId,
 		MatchId:       opts.MatchId,
+		Count:         1,
 	})
 	if err != nil {
 		sentry.CaptureException(err)
@@ -211,5 +213,11 @@ func getMatchScores(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 		return Goals{}, err
 	}
 	childSpan.Finish()
-	return Goals{Home: match.HomeTeam.Score, Away: match.AwayTeam.Score}, nil
+	if len(matches) != 1 {
+		err := errors.New("not enough matches found")
+		sentry.CaptureException(err)
+		return Goals{}, err
+	}
+	match := matches[0]
+	return Goals{Home: match.HomeTeamScore, Away: match.AwayTeamScore}, nil
 }

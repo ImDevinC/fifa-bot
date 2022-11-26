@@ -19,10 +19,10 @@ var eventsToSkip = map[go_fifa.MatchEvent]bool{
 	go_fifa.ThrowIn:      true,
 	go_fifa.Clearance:    true,
 	go_fifa.Unknown2:     true,
-	go_fifa.Crossbar:     true,
+	go_fifa.HitCrossbar:  true,
 	go_fifa.FoulUnknown:  true,
 	go_fifa.GoalieSaved:  true,
-	go_fifa.Unknown:      true,
+	go_fifa.Pending:      true,
 	go_fifa.DroppedBall:  true,
 	go_fifa.Assist:       true,
 }

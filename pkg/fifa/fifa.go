@@ -41,7 +41,13 @@ func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]queue.Ma
 	return returnValue, nil
 }
 
-func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue.MatchOptions) ([]string, bool, error) {
+type MatchData struct {
+	NewEvents         []string
+	Done              bool
+	PendingEventFound bool
+}
+
+func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue.MatchOptions) (MatchData, error) {
 	span := sentry.StartSpan(ctx, "function")
 	defer span.Finish()
 	span.Description = "fifa.GetMatchEvents"
@@ -59,6 +65,13 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	childSpan.SetTag("seasonId", opts.SeasonId)
 	childSpan.SetTag("stageId", opts.StageId)
 	childSpan.SetTag("matchId", opts.MatchId)
+
+	returnData := MatchData{
+		PendingEventFound: false,
+		Done:              false,
+		NewEvents:         []string{},
+	}
+
 	events, err := fifaClient.GetMatchEvents(&go_fifa.GetMatchEventOptions{
 		CompetitionId: opts.CompetitionId,
 		SeasonId:      opts.SeasonId,
@@ -68,20 +81,22 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	if err != nil {
 		sentry.CaptureException(err)
 		childSpan.Finish()
-		return nil, false, fmt.Errorf("failed to get match events. %w", err)
+		return returnData, fmt.Errorf("failed to get match events. %w", err)
 	}
 	childSpan.Finish()
-	var returnValue []string
 	var lastEventFound = false
-	var matchOver = false
 
 	// -1 means the event just came over from the match watcher
 	if opts.LastEvent == "-1" {
 		opts.LastEvent = "0"
 	}
 	for _, evt := range events.Events {
+		if evt.Type == go_fifa.Pending {
+			returnData.PendingEventFound = true
+			break // Found a pending type, and we want to wait for it to update
+		}
 		if evt.Type == go_fifa.MatchEnd {
-			matchOver = true
+			returnData.Done = true
 		}
 		if !lastEventFound {
 			if evt.Id == opts.LastEvent || opts.LastEvent == "0" {
@@ -96,14 +111,14 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 		if resp == "" {
 			continue
 		}
-		returnValue = append(returnValue, resp)
+		returnData.NewEvents = append(returnData.NewEvents, resp)
 	}
 	// If an event gets deleted, we may not find it above. In that case,
 	// let's just reset to the most recent event
-	if opts.LastEvent != "0" && !lastEventFound && len(events.Events) > 0 {
+	if !returnData.PendingEventFound && opts.LastEvent != "0" && !lastEventFound && len(events.Events) > 0 {
 		opts.LastEvent = events.Events[len(events.Events)-1].Id
 	}
-	return returnValue, matchOver, nil
+	return returnData, nil
 }
 
 func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.EventResponse, opts *queue.MatchOptions) string {

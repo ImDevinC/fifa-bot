@@ -48,19 +48,19 @@ func GetEvents(ctx context.Context, config *GetEventsConfig, event events.SQSMes
 	}
 	log.WithFields(fields).Debug("checking for events")
 
-	events, matchOver, err := fifa.GetMatchEvents(ctx, config.FifaClient, &opts)
+	matchData, err := fifa.GetMatchEvents(ctx, config.FifaClient, &opts)
 	if err != nil {
 		sentry.CaptureException(err)
 		return fmt.Errorf("failed to get match events. %w", err)
 	}
 
 	fields["lastEvent"] = opts.LastEvent
-	err = sendEventsToSlack(ctx, config.WebhookURL, events)
+	err = sendEventsToSlack(ctx, config.WebhookURL, matchData.NewEvents)
 	if err != nil {
 		sentry.CaptureException(err)
 		return fmt.Errorf("failed to send events to Slack. %w", err)
 	}
-	if matchOver {
+	if matchData.Done && !matchData.PendingEventFound {
 		return nil
 	}
 

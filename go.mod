@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sqs v1.19.13
 	github.com/getsentry/sentry-go v0.15.0
 	github.com/google/go-cmp v0.5.9
-	github.com/imdevinc/go-fifa v0.1.1
+	github.com/imdevinc/go-fifa v0.1.2
 	github.com/sirupsen/logrus v1.9.0
 )
 

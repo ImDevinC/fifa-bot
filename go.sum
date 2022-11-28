@@ -46,6 +46,8 @@ github.com/google/go-querystring v1.1.0 h1:AnCroh3fv4ZBgVIf1Iwtovgjaw/GiKJo8M8yD
 github.com/google/go-querystring v1.1.0/go.mod h1:Kcdr2DB4koayq7X8pmAG4sNG59So17icRSOU623lUBU=
 github.com/imdevinc/go-fifa v0.1.1 h1:rIsrufjnpHE0f/4U6SRulsaIVk4dx1VdjijwsRkfhkg=
 github.com/imdevinc/go-fifa v0.1.1/go.mod h1:m/m5MSZYUzzTh778WJc3LmKlJwXt2zWmeKNeO+6Z6ys=
+github.com/imdevinc/go-fifa v0.1.2 h1:i546wpP/zM+Ubm957JjzxSSXusLlWRTyPMdckVf6w+g=
+github.com/imdevinc/go-fifa v0.1.2/go.mod h1:m/m5MSZYUzzTh778WJc3LmKlJwXt2zWmeKNeO+6Z6ys=
 github.com/jmespath/go-jmespath v0.4.0 h1:BEgLn5cpjn8UN1mAw4NjwDrS35OdebyEtFe+9YPoQUg=
 github.com/jmespath/go-jmespath v0.4.0/go.mod h1:T8mJZnbsbmF+m6zOOFylbeCJqk5+pHWvzYPziyZiYoo=
 github.com/jmespath/go-jmespath/internal/testify v1.5.1 h1:shLQSRRSCCPj3f2gpwzGwWFoC7ycTf1rcQZHOlsJ6N8=

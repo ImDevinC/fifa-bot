@@ -7,13 +7,13 @@ import (
 	"os"
 	"time"
 
-	go_fifa "github.com/ImDevinC/go-fifa"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/getsentry/sentry-go"
 	"github.com/imdevinc/fifa-bot/pkg/app"
 	"github.com/imdevinc/fifa-bot/pkg/database"
 	"github.com/imdevinc/fifa-bot/pkg/helper"
 	"github.com/imdevinc/fifa-bot/pkg/queue"
+	go_fifa "github.com/imdevinc/go-fifa"
 	log "github.com/sirupsen/logrus"
 )
 

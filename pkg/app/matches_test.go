@@ -4,13 +4,13 @@ import (
 	"context"
 	"testing"
 
-	go_fifa "github.com/ImDevinC/go-fifa"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb"
 	"github.com/aws/aws-sdk-go-v2/service/dynamodb/types"
 	"github.com/aws/aws-sdk-go-v2/service/sqs"
 	"github.com/imdevinc/fifa-bot/pkg/app"
 	"github.com/imdevinc/fifa-bot/pkg/database"
 	"github.com/imdevinc/fifa-bot/pkg/queue"
+	go_fifa "github.com/imdevinc/go-fifa"
 )
 
 type TestDB struct {

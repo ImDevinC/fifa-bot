@@ -1,7 +1,7 @@
 package fifa
 
 import (
-	go_fifa "github.com/ImDevinC/go-fifa"
+	go_fifa "github.com/imdevinc/go-fifa"
 )
 
 var eventsToSkip = map[go_fifa.MatchEvent]bool{

@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"strings"
 
-	go_fifa "github.com/ImDevinC/go-fifa"
 	"github.com/getsentry/sentry-go"
 	"github.com/imdevinc/fifa-bot/pkg/queue"
+	go_fifa "github.com/imdevinc/go-fifa"
 )
 
 func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]queue.MatchOptions, error) {

@@ -8,11 +8,11 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	go_fifa "github.com/ImDevinC/go-fifa"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/imdevinc/fifa-bot/pkg/app"
 	"github.com/imdevinc/fifa-bot/pkg/queue"
+	go_fifa "github.com/imdevinc/go-fifa"
 )
 
 func TestGetEvents(t *testing.T) {

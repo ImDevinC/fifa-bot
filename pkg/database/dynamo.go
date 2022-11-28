@@ -49,6 +49,7 @@ func (d *Client) DoesMatchExist(ctx context.Context, opts *queue.MatchOptions) e
 	span := sentry.StartSpan(ctx, "db.query")
 	defer span.Finish()
 	span.Description = "database.DoesMatchExist"
+	span.SetTag("matchId", opts.MatchId)
 
 	ctx = span.Context()
 
@@ -75,6 +76,7 @@ func (d *Client) AddMatch(ctx context.Context, opts *queue.MatchOptions) error {
 	span := sentry.StartSpan(ctx, "db.query")
 	defer span.Finish()
 	span.Description = "database.AddMatch"
+	span.SetTag("matchId", opts.MatchId)
 
 	ctx = span.Context()
 

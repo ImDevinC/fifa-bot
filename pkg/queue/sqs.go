@@ -79,6 +79,10 @@ func (c *Client) SendToQueue(ctx context.Context, opts *MatchOptions) error {
 	span := sentry.StartSpan(ctx, "queue.submit")
 	defer span.Finish()
 	span.Description = "queue.SendToQueue"
+	span.SetTag("competitionId", opts.CompetitionId)
+	span.SetTag("seasonId", opts.SeasonId)
+	span.SetTag("stageId", opts.StageId)
+	span.SetTag("matchId", opts.MatchId)
 
 	ctx = span.Context()
 

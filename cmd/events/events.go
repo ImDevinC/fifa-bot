@@ -88,6 +88,7 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 		WebhookURL:  webhookURL,
 	}
 
+	defer sentry.Recover()
 	for _, record := range event.Records {
 		return app.GetEvents(ctx, &config, record)
 	}

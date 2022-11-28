@@ -85,6 +85,7 @@ func HandleRequest(ctx context.Context) error {
 		config.CompetitionId = competitionId
 	}
 
+	defer sentry.Recover()
 	return app.GetMatches(ctx, &config)
 }
 

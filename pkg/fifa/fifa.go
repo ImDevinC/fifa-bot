@@ -121,7 +121,7 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	return returnData, nil
 }
 
-func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.EventResponse, opts *queue.MatchOptions) string {
+func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.TimelineEvent, opts *queue.MatchOptions) string {
 	span := sentry.StartSpan(ctx, "function")
 	defer span.Finish()
 	span.Description = "fifa.processEvents"
@@ -165,8 +165,8 @@ func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.E
 		prefix = "Penalty awarded!"
 	}
 	var msg string
-	if len(evt.EventDescription) > 0 {
-		msg = fmt.Sprintf("%s %s %s", prefix, evt.EventDescription[0].Description, suffix)
+	if len(evt.Description) > 0 {
+		msg = fmt.Sprintf("%s %s %s", prefix, evt.Description[0].Description, suffix)
 	} else {
 		msg = fmt.Sprintf("%s %s", prefix, suffix)
 	}

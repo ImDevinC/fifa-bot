@@ -3,7 +3,7 @@ module github.com/imdevinc/fifa-bot
 go 1.19
 
 require (
-	github.com/ImDevinC/go-fifa v0.0.4
+	github.com/ImDevinC/go-fifa v0.1.0
 	github.com/aws/aws-lambda-go v1.34.1
 	github.com/aws/aws-sdk-go-v2 v1.17.1
 	github.com/aws/aws-sdk-go-v2/config v1.18.0
@@ -28,7 +28,6 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.17.2 // indirect
 	github.com/aws/smithy-go v1.13.4 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/google/uuid v1.3.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/stretchr/testify v1.8.0 // indirect
 	golang.org/x/sys v0.2.0 // indirect

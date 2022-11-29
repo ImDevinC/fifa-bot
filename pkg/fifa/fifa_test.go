@@ -148,3 +148,24 @@ func TestLastEvent(t *testing.T) {
 		}
 	}
 }
+
+func TestLiveEvents(t *testing.T) {
+	client := go_fifa.Client{}
+	resp, err := fifa.GetMatchEvents(context.Background(), &client, &queue.MatchOptions{
+		CompetitionId:  "17",
+		SeasonId:       "255711",
+		StageId:        "285063",
+		MatchId:        "400235450",
+		LastEvent:      "18185702501692",
+		HomeTeamName:   "Netherlands",
+		AwayTeamName:   "Qatar",
+		HomeTeamAbbrev: "NED",
+		AwayTeamAbbrev: "QAT",
+	})
+	if ok := assert.NoError(t, err); !ok {
+		t.Fail()
+	}
+	if ok := assert.Len(t, resp.NewEvents, 2); !ok {
+		t.Fail()
+	}
+}

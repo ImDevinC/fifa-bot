@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/getsentry/sentry-go"
@@ -90,15 +89,7 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 
 	// Sort events by event ID
 	sort.SliceStable(events.Events, func(i, j int) bool {
-		firstId, err := strconv.Atoi(events.Events[i].Id)
-		if err != nil {
-			return true
-		}
-		secondId, err := strconv.Atoi(events.Events[j].Id)
-		if err != nil {
-			return true
-		}
-		return firstId < secondId
+		return events.Events[i].Timestamp.Before(events.Events[j].Timestamp)
 	})
 
 	// -1 means the event just came over from the match watcher

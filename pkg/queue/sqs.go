@@ -83,6 +83,7 @@ func (c *Client) SendToQueue(ctx context.Context, opts *MatchOptions) error {
 	span.SetTag("seasonId", opts.SeasonId)
 	span.SetTag("stageId", opts.StageId)
 	span.SetTag("matchId", opts.MatchId)
+	span.SetTag("lastEvent", opts.LastEvent)
 
 	ctx = span.Context()
 

@@ -24,7 +24,7 @@ const eventList = `
 	"IdGroup": "5",
 	"Event": [
 		{
-			"EventId": "18185700000873",
+			"EventId": "18185700000871",
 			"IdTeam": "43960",
 			"IdPlayer": "336098",
 			"Timestamp": "2022-11-29T15:47:58.618Z",
@@ -76,6 +76,36 @@ const eventList = `
 					"Description": "The referee brings the first period to an end."
 				}
 			]
+		},
+		{
+			"EventId": "18185700000873",
+			"IdTeam": "43960",
+			"IdPlayer": "336098",
+			"Timestamp": "2022-11-29T15:47:58.618Z",
+			"MatchMinute": "45'+3'",
+			"Period": 3,
+			"HomeGoals": 1,
+			"AwayGoals": 0,
+			"Type": 12,
+			"Qualifiers": [],
+			"TypeLocalized": [
+				{
+					"Locale": "en-GB",
+					"Description": "Attempt at Goal"
+				}
+			],
+			"PositionX": 0.5585157,
+			"PositionY": -0.24816446,
+			"GoalGatePositionY": -0.21117647,
+			"GoalGatePositionZ": 0.008,
+			"HomePenaltyGoals": 0,
+			"AwayPenaltyGoals": 0,
+			"EventDescription": [
+				{
+					"Locale": "en-GB",
+					"Description": "MEMPHIS (Netherlands) attempts an effort on goal."
+				}
+			]
 		}
 	]
 }
@@ -96,21 +126,25 @@ func TestLastEvent(t *testing.T) {
 	client := go_fifa.Client{
 		Client: &TestClient{},
 	}
-	events, err := fifa.GetMatchEvents(context.Background(), &client, &queue.MatchOptions{
-		CompetitionId:  "3",
-		SeasonId:       "4",
-		StageId:        "1",
-		MatchId:        "2",
-		LastEvent:      "18185700000875",
-		HomeTeamName:   "Netherlands",
-		AwayTeamName:   "Qatar",
-		HomeTeamAbbrev: "NED",
-		AwayTeamAbbrev: "QAT",
-	})
-	if ok := assert.NoError(t, err); !ok {
-		t.Fail()
-	}
-	if ok := assert.Len(t, events.NewEvents, 0); !ok {
-		t.Fail()
+	for i := 0; i < 100; i++ {
+		opts := queue.MatchOptions{
+			CompetitionId:  "3",
+			SeasonId:       "4",
+			StageId:        "1",
+			MatchId:        "2",
+			LastEvent:      "18185700000871",
+			HomeTeamName:   "Netherlands",
+			AwayTeamName:   "Qatar",
+			HomeTeamAbbrev: "NED",
+			AwayTeamAbbrev: "QAT",
+		}
+
+		_, err := fifa.GetMatchEvents(context.Background(), &client, &opts)
+		if ok := assert.NoError(t, err); !ok {
+			t.Fail()
+		}
+		if ok := assert.Equal(t, opts.LastEvent, "18185700000875"); !ok {
+			t.Fail()
+		}
 	}
 }

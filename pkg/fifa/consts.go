@@ -41,7 +41,7 @@ var flagEmojis = map[string]string{
 	"CRC": ":flag-cr:",
 	"CRO": ":flag-hr:",
 	"DEN": ":flag-dk:",
-	"ECU": ":flag-ec",
+	"ECU": ":flag-ec:",
 	"EGY": ":flag-eg:",
 	"ENG": ":flag-england:",
 	"ESP": ":flag-es:",

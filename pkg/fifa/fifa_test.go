@@ -165,7 +165,7 @@ func TestLiveEvents(t *testing.T) {
 	if ok := assert.NoError(t, err); !ok {
 		t.Fail()
 	}
-	if ok := assert.Len(t, resp.NewEvents, 2); !ok {
+	if ok := assert.Len(t, resp.NewEvents, 150); !ok {
 		t.Fail()
 	}
 }

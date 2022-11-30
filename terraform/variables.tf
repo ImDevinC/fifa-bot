@@ -15,3 +15,9 @@ variable "encrypted_sentry_dsn_matches" {
   description = "KMS Encrypted Sentry DSN for fifa-matches"
   default     = "AQICAHgsJXuUfVcivglHv1qjCTscwl6NzhvBut8NdXoUXyTZ4gFoU3zFBzi196LmOkomVN5MAAAAvjCBuwYJKoZIhvcNAQcGoIGtMIGqAgEAMIGkBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDJtJtAM2Dy4hYAY+1gIBEIB3XF5ET8S3faV4E+os7/9TI6g7ScsK2EHvDjXobbAX/WLSaZy22A6ooUzteJTm/iE6TTivbDt9prwTH7ur6QSQ0agUoGNbJcFptvKZ3+GlxvZtHsmvToI25wCcyv8y52sCRbTbDIIPtUkJrEr9eIvJejR6a3yfkOE="
 }
+
+variable "encrypted_test_slack_url" {
+  type        = string
+  description = "KMS Encrypted Slack Webhook URL for Test Server"
+  default     = "AQICAHgsJXuUfVcivglHv1qjCTscwl6NzhvBut8NdXoUXyTZ4gEhOaN+FSrpiyRtKLFne7LcAAAAszCBsAYJKoZIhvcNAQcGoIGiMIGfAgEAMIGZBgkqhkiG9w0BBwEwHgYJYIZIAWUDBAEuMBEEDG2ePl2ZZ7+7khxPQQIBEIBsGVi1qwSSgJQM4XuyovPf9CSm7LrQYZE5yftbkYX+HFt9xed5/woWr/zD+pHE1+r3oyNc8rfCJC/rXXwbfag467xi/VZlnsqvEgb1MhnHou52HjyvTIlCH+HXQ9+zcdR3ks2nOXrzMXY2COSK"
+}

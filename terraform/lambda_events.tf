@@ -27,12 +27,12 @@ resource "aws_lambda_function" "events" {
   timeout          = 30
   environment {
     variables = {
-      SENTRY_DSN = data.aws_kms_secrets.secrets.plaintext["sentry-dsn-events"]
-      QUEUE_URL  = aws_sqs_queue.events.url
-      TABLE_NAME = aws_dynamodb_table.fifa_bot.id
-      # SLACK_WEBHOOK_URL = data.aws_kms_secrets.secrets.plaintext["slack-webhook-url"]
-      SLACK_WEBHOOK_URL = data.aws_kms_secrets.secrets.plaintext["slack-webhook-test-url"]
-      LOG_LEVEL         = "INFO"
+      SENTRY_DSN        = data.aws_kms_secrets.secrets.plaintext["sentry-dsn-events"]
+      QUEUE_URL         = aws_sqs_queue.events.url
+      TABLE_NAME        = aws_dynamodb_table.fifa_bot.id
+      SLACK_WEBHOOK_URL = data.aws_kms_secrets.secrets.plaintext["slack-webhook-url"]
+      # SLACK_WEBHOOK_URL = data.aws_kms_secrets.secrets.plaintext["slack-webhook-test-url"]
+      LOG_LEVEL = "INFO"
     }
   }
 }

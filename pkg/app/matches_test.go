@@ -21,11 +21,19 @@ func (d *TestDB) GetItem(ctx context.Context, params *dynamodb.GetItemInput, opt
 	if d.GetItemFn != nil {
 		return d.GetItemFn(ctx, params, optFns...)
 	}
-	return nil, nil
+	return &dynamodb.GetItemOutput{}, nil
 }
 
 func (d *TestDB) PutItem(ctx context.Context, params *dynamodb.PutItemInput, optFns ...func(*dynamodb.Options)) (*dynamodb.PutItemOutput, error) {
-	return nil, nil
+	return &dynamodb.PutItemOutput{}, nil
+}
+
+func (d *TestDB) UpdateItem(ctx context.Context, params *dynamodb.UpdateItemInput, optsFns ...func(*dynamodb.Options)) (*dynamodb.UpdateItemOutput, error) {
+	return &dynamodb.UpdateItemOutput{}, nil
+}
+
+func (d *TestDB) DeleteItem(ctx context.Context, params *dynamodb.DeleteItemInput, optsFns ...func(*dynamodb.Options)) (*dynamodb.DeleteItemOutput, error) {
+	return &dynamodb.DeleteItemOutput{}, nil
 }
 
 var _ database.Database = (*TestDB)(nil)

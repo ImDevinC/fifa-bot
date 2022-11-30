@@ -43,7 +43,7 @@ func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]queue.Ma
 }
 
 type MatchData struct {
-	NewEvents         []string
+	NewEvents         []go_fifa.TimelineEvent
 	Done              bool
 	PendingEventFound bool
 }
@@ -70,7 +70,7 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	returnData := MatchData{
 		PendingEventFound: false,
 		Done:              false,
-		NewEvents:         []string{},
+		NewEvents:         []go_fifa.TimelineEvent{},
 	}
 
 	events, err := fifaClient.GetMatchEvents(&go_fifa.GetMatchEventOptions{
@@ -104,20 +104,8 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 		if evt.Type == go_fifa.MatchEnd {
 			returnData.Done = true
 		}
-		if !lastEventFound {
-			if evt.Id == opts.LastEvent || opts.LastEvent == "0" {
-				lastEventFound = true
-			}
-			if opts.LastEvent != "0" {
-				continue
-			}
-		}
 		opts.LastEvent = evt.Id
-		resp := processEvent(ctx, fifaClient, evt, opts)
-		if resp == "" {
-			continue
-		}
-		returnData.NewEvents = append(returnData.NewEvents, resp)
+		returnData.NewEvents = append(returnData.NewEvents, evt)
 	}
 	// If an event gets deleted, we may not find it above. In that case,
 	// let's just reset to the most recent event
@@ -127,10 +115,10 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	return returnData, nil
 }
 
-func processEvent(ctx context.Context, fifaClient *go_fifa.Client, evt go_fifa.TimelineEvent, opts *queue.MatchOptions) string {
+func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *queue.MatchOptions) string {
 	span := sentry.StartSpan(ctx, "function")
 	defer span.Finish()
-	span.Description = "fifa.processEvents"
+	span.Description = "fifa.ProcessEvent"
 	span.SetTag("eventId", evt.Id)
 	span.SetTag("eventType", fmt.Sprintf("%d", int(evt.Type)))
 

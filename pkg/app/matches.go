@@ -27,9 +27,9 @@ func GetMatches(ctx context.Context, config *GetMatchesConfig) error {
 
 	ctx = span.Context()
 
+	log.Debug("starting GetMatches")
 	matches, err := fifa.GetLiveMatches(ctx, config.FifaClient)
 	if err != nil {
-		sentry.CaptureException(err)
 		log.WithError(err).Error("failed to get live matches")
 		return err
 	}
@@ -37,32 +37,37 @@ func GetMatches(ctx context.Context, config *GetMatchesConfig) error {
 	var errWrap []string
 	for _, m := range matches {
 		if len(config.CompetitionId) > 0 && m.CompetitionId != config.CompetitionId {
+			log.WithFields(log.Fields{
+				"wantedCompetitionId": config.CompetitionId,
+				"competitionId":       m.CompetitionId,
+			}).Debug("competitionId doesn't match, skipping")
 			continue
 		}
 
-		err := config.DatabaseClient.DoesMatchExist(ctx, &m)
+		log.WithField("matchId", m.MatchId).Debug("checking if match exists")
+		err := config.DatabaseClient.DoesMatchExist(ctx, m.MatchId)
 		if err != nil && !errors.Is(err, database.ErrMatchNotFound) {
-			sentry.CaptureException(err)
 			log.WithError(err).Error("failed to get match info from database")
 			errWrap = append(errWrap, err.Error())
 			continue
 		}
 		if !errors.Is(err, database.ErrMatchNotFound) {
+			log.Debug("match exists, skipping")
 			continue
 		}
 
-		err = config.DatabaseClient.AddMatch(ctx, &m)
+		log.Debug("adding match to database")
+		err = config.DatabaseClient.AddMatch(ctx, m.MatchId)
 		if err != nil {
-			sentry.CaptureException(err)
 			log.WithError(err).Error("failed to save match to database")
 			errWrap = append(errWrap, err.Error())
 			continue
 		}
 
+		log.Debug("sending match to queue")
 		m.LastEvent = "-1"
 		err = config.QueueClient.SendToQueue(ctx, &m)
 		if err != nil {
-			sentry.CaptureException(err)
 			log.WithError(err).Error("failed to send message to queue")
 			errWrap = append(errWrap, err.Error())
 			continue

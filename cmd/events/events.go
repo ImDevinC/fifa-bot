@@ -11,6 +11,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/getsentry/sentry-go"
 	"github.com/imdevinc/fifa-bot/pkg/app"
+	"github.com/imdevinc/fifa-bot/pkg/database"
 	"github.com/imdevinc/fifa-bot/pkg/helper"
 	"github.com/imdevinc/fifa-bot/pkg/queue"
 	go_fifa "github.com/imdevinc/go-fifa"
@@ -26,6 +27,12 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 		logLevel = log.InfoLevel
 	}
 	helper.InitLogging(logLevel)
+	tableName := os.Getenv("TABLE_NAME")
+	if len(tableName) == 0 {
+		log.Error("missing TABLE_NAME")
+		return errors.New("missing TABLE_NAME")
+	}
+
 	queueURL := os.Getenv("QUEUE_URL")
 	if len(queueURL) == 0 {
 		log.Error("missing QUEUE_URL")
@@ -78,14 +85,21 @@ func HandleRequest(ctx context.Context, event events.SQSEvent) error {
 		return err
 	}
 
+	dynamoClient, err := database.NewDynamoClient(ctx, tableName)
+	if err != nil {
+		log.WithError(err).Error("failed to create dynamo client")
+		return err
+	}
+
 	config := app.GetEventsConfig{
 		FifaClient: &go_fifa.Client{
 			Client: &http.Client{
 				Timeout: 5 * time.Second,
 			},
 		},
-		QueueClient: &sqsClient,
-		WebhookURL:  webhookURL,
+		DatabaseClient: &dynamoClient,
+		QueueClient:    &sqsClient,
+		WebhookURL:     webhookURL,
 	}
 
 	defer sentry.Recover()

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"strings"
@@ -53,8 +52,8 @@ func GetEvents(ctx context.Context, config *GetEventsConfig, event events.SQSMes
 	log.WithFields(fields).Debug("checking for events")
 
 	existingEvents, err := config.DatabaseClient.GetEvents(ctx, opts.MatchId)
-	if errors.Is(err, database.ErrMatchNotFound) {
-		return fmt.Errorf("match %s does not exist. %w", opts.MatchId, err)
+	if err != nil {
+		return fmt.Errorf("failed to get existing events for match %s. %w", opts.MatchId, err)
 	}
 
 	matchData, err := fifa.GetMatchEvents(ctx, config.FifaClient, &opts)

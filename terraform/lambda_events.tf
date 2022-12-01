@@ -71,6 +71,17 @@ data "aws_iam_policy_document" "events" {
       aws_sqs_queue.events.arn
     ]
   }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "dynamodb:GetItem",
+      "dynamodb:UpdateItem"
+    ]
+    resources = [
+      aws_dynamodb_table.fifa_bot.arn
+    ]
+  }
 }
 
 resource "aws_iam_role_policy_attachment" "events" {

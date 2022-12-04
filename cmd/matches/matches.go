@@ -40,7 +40,7 @@ func HandleRequest(ctx context.Context) error {
 
 	err = helper.InitSentry(helper.SentryConfig{
 		DSN:             os.Getenv("SENTRY_DSN"),
-		TraceSampleRate: 1,
+		TraceSampleRate: .5,
 		Release:         release,
 		Debug:           logLevel == log.DebugLevel,
 	})

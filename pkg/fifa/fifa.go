@@ -135,7 +135,11 @@ func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *queue.Ma
 		go_fifa.OwnGoal,
 		go_fifa.PenaltyGoal:
 		prefix = ":soccer:"
-		suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayGoals)
+		if evt.Period == go_fifa.ShootoutPeriod {
+			suffix = fmt.Sprintf("%d (%d) %s %s : %s %s (%d) %d", evt.HomeGoals, evt.HomePenaltyGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayPenaltyGoals, evt.AwayGoals)
+		} else {
+			suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayGoals)
+		}
 	case go_fifa.YellowCard,
 		go_fifa.DoubleYellow:
 		prefix = ":large_yellow_square:"
@@ -148,14 +152,26 @@ func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *queue.Ma
 		suffix = fmt.Sprintf("%s %s vs %s %s", opts.HomeTeamName, homeTeamFlag, awayTeamFlag, opts.AwayTeamName)
 	case go_fifa.MatchEnd:
 		prefix = ":clock12:"
-		suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayGoals)
+		if evt.Period == go_fifa.ShootoutPeriod {
+			suffix = fmt.Sprintf("%d (%d) %s %s : %s %s (%d) %d", evt.HomeGoals, evt.HomePenaltyGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayPenaltyGoals, evt.AwayGoals)
+		} else {
+			suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayGoals)
+		}
 	case go_fifa.HalfEnd:
 		prefix = ":clock1230:"
-		suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamName, homeTeamFlag, awayTeamFlag, opts.AwayTeamName, evt.AwayGoals)
+		if evt.Period == go_fifa.ShootoutPeriod {
+			suffix = fmt.Sprintf("%d (%d) %s %s : %s %s (%d) %d", evt.HomeGoals, evt.HomePenaltyGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayPenaltyGoals, evt.AwayGoals)
+		} else {
+			suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayGoals)
+		}
 	case go_fifa.PenaltyMissed,
 		go_fifa.PenaltyMissed2:
 		prefix = ":no_entry_sign:"
 	case go_fifa.PenaltyAwarded:
+		// This causes some spam messaging, so skip during shootouts
+		if evt.Period == go_fifa.ShootoutPeriod {
+			return ""
+		}
 		prefix = "Penalty awarded!"
 	}
 	var msg string

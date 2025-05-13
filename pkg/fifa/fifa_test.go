@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/imdevinc/fifa-bot/pkg/fifa"
-	"github.com/imdevinc/fifa-bot/pkg/queue"
+	"github.com/imdevinc/fifa-bot/pkg/models"
 	go_fifa "github.com/imdevinc/go-fifa"
 	"github.com/stretchr/testify/assert"
 )
@@ -127,7 +127,7 @@ func TestLastEvent(t *testing.T) {
 		Client: &TestClient{},
 	}
 	for i := 0; i < 100; i++ {
-		opts := queue.MatchOptions{
+		opts := models.Match{
 			CompetitionId:  "3",
 			SeasonId:       "4",
 			StageId:        "1",
@@ -151,7 +151,7 @@ func TestLastEvent(t *testing.T) {
 
 func TestLiveEvents(t *testing.T) {
 	client := go_fifa.Client{}
-	resp, err := fifa.GetMatchEvents(context.Background(), &client, &queue.MatchOptions{
+	resp, err := fifa.GetMatchEvents(context.Background(), &client, &models.Match{
 		CompetitionId:  "17",
 		SeasonId:       "255711",
 		StageId:        "285063",

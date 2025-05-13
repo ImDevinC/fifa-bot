@@ -10,6 +10,7 @@ type Config struct {
 		Password string `envconfig:"REDIS_PASSWORD"`
 		Database int    `envconfig:"REDIS_DB" required:"true"`
 	}
+	LogLevel string `envconfig:"LOG_LEVEL" default:"WARN"`
 }
 
 func GetConfigFromEnv() (*Config, error) {

@@ -6,28 +6,19 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/getsentry/sentry-go"
-	"github.com/imdevinc/fifa-bot/pkg/queue"
+	"github.com/imdevinc/fifa-bot/pkg/models"
 	go_fifa "github.com/imdevinc/go-fifa"
 )
 
-func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]queue.MatchOptions, error) {
-	span := sentry.StartSpan(ctx, "function")
-	defer span.Finish()
-	span.Description = "fifa.GetLiveMatches"
-
-	childSpan := sentry.StartSpan(ctx, "http")
-	span.Description = "go-fifa.GetCurrentMatches"
+func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]models.Match, error) {
 	matches, err := fifaClient.GetCurrentMatches()
 	if err != nil {
-		sentry.CaptureException(err)
-		childSpan.Finish()
 		return nil, err
 	}
-	childSpan.Finish()
-	var returnValue []queue.MatchOptions
+	returnValue := []models.Match{}
 	for _, m := range matches {
-		returnValue = append(returnValue, queue.MatchOptions{
+		returnValue = append(returnValue, models.Match{
+			Events:         []string{},
 			CompetitionId:  m.CompetitionId,
 			SeasonId:       m.SeasonId,
 			StageId:        m.StageId,
@@ -48,25 +39,7 @@ type MatchData struct {
 	PendingEventFound bool
 }
 
-func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue.MatchOptions) (MatchData, error) {
-	span := sentry.StartSpan(ctx, "function")
-	defer span.Finish()
-	span.Description = "fifa.GetMatchEvents"
-	span.SetTag("competitionId", opts.CompetitionId)
-	span.SetTag("seasonId", opts.SeasonId)
-	span.SetTag("stageId", opts.StageId)
-	span.SetTag("matchId", opts.MatchId)
-	span.SetTag("lastEvent", opts.LastEvent)
-
-	ctx = span.Context()
-
-	childSpan := sentry.StartSpan(ctx, "http")
-	childSpan.Description = "go-fifa.GetMatchEvents"
-	childSpan.SetTag("competitionId", opts.CompetitionId)
-	childSpan.SetTag("seasonId", opts.SeasonId)
-	childSpan.SetTag("stageId", opts.StageId)
-	childSpan.SetTag("matchId", opts.MatchId)
-
+func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *models.Match) (MatchData, error) {
 	returnData := MatchData{
 		PendingEventFound: false,
 		Done:              false,
@@ -80,11 +53,8 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 		MatchId:       opts.MatchId,
 	})
 	if err != nil {
-		sentry.CaptureException(err)
-		childSpan.Finish()
 		return returnData, fmt.Errorf("failed to get match events. %w", err)
 	}
-	childSpan.Finish()
 	var lastEventFound = false
 
 	// Sort events by event ID
@@ -115,13 +85,7 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *queue
 	return returnData, nil
 }
 
-func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *queue.MatchOptions) string {
-	span := sentry.StartSpan(ctx, "function")
-	defer span.Finish()
-	span.Description = "fifa.ProcessEvent"
-	span.SetTag("eventId", evt.Id)
-	span.SetTag("eventType", fmt.Sprintf("%d", int(evt.Type)))
-
+func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *models.Match) string {
 	if _, exists := eventsToSkip[evt.Type]; exists {
 		return ""
 	}

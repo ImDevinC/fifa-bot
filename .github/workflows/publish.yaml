@@ -23,6 +23,7 @@ jobs:
           patchAll: true
           token: ${{ github.token }}
           branch: main
+          majorList: major
       - name: Make dist
         run: VERSION=${{ steps.semver.outputs.nextStrict }} make dist
       - name: Create release

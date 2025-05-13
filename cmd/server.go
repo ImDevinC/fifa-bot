@@ -12,6 +12,7 @@ import (
 
 func main() {
 	logger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
+	slog.SetDefault(logger)
 	slog.SetLogLoggerLevel(slog.LevelDebug)
 	cfg, err := app.GetConfigFromEnv()
 	if err != nil {

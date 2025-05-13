@@ -1,35 +1,14 @@
-name: Deploy changes
+name: Publish Docker Image
 
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
+    tags:
+      - v*
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-      - name: Prepare Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: "1.24.3"
-      - name: Get next version
-        id: semver
-        uses: ietf-tools/semver-action@v1
-        with:
-          patchAll: true
-          token: ${{ github.token }}
-          branch: main
-          majorList: major
-      - name: Make dist
-        run: VERSION=${{ steps.semver.outputs.nextStrict }} make dist
-      - name: Create release
-        uses: ncipollo/release-action@v1
-        with:
-          draft: false
-          name: ${{ steps.semver.outputs.next }}
-          tag: ${{ steps.semver.outputs.next }}
-          token: ${{ github.token }}
+  publish:
+    permissions:
+      packages: write
+      contents: read
+    uses: imdevinc/imdevinc/.github/workflows/shared-publish-docker.yaml@v1

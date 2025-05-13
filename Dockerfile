@@ -1,6 +1,6 @@
 ARG GO_VERSION=1.23
 
-FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:${GO_VERSION} as builder
+FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:${GO_VERSION} AS builder
 
 WORKDIR /src
 
@@ -16,6 +16,6 @@ FROM --platform=${BUILDPLATFORM:-linux/amd64} gcr.io/distroless/static
 
 USER nonroot:nonroot
 
-COPY --from=builder --chown=nonroot:nonroot /updater /updater
+COPY --from=builder --chown=nonroot:nonroot /server /server
 
 ENTRYPOINT [ "/server" ]

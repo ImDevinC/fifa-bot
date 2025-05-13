@@ -107,20 +107,13 @@ func (a *app) processMatch(ctx context.Context, matchID string) error {
 	if err != nil {
 		return fmt.Errorf("failed to get match %s from database. %w", matchID, err)
 	}
-	matchOpts := models.Match{
-		CompetitionId: match.CompetitionId,
-		SeasonId:      match.SeasonId,
-		StageId:       match.StageId,
-		MatchId:       match.MatchId,
-	}
-	matchData, err := fifa.GetMatchEvents(ctx, a.fifa, &matchOpts)
+	matchData, err := fifa.GetMatchEvents(ctx, a.fifa, &match)
 	if err != nil {
 		return fmt.Errorf("failed to get match %s events from FIFA. %w", matchID, err)
 	}
 
 	existingEvents := match.Events
-	slog.Debug("comparing match events", "matchId", matchID, "apiEvents", len(matchData.NewEvents))
-	ids, messages := findNewEvents(ctx, match.Events, matchData.NewEvents, &matchOpts)
+	ids, messages := findNewEvents(ctx, match.Events, matchData.NewEvents, &match)
 	allEvents := append(existingEvents, ids...)
 	if len(allEvents) > len(existingEvents) {
 		match.Events = allEvents
@@ -130,6 +123,7 @@ func (a *app) processMatch(ctx context.Context, matchID string) error {
 		}
 	}
 
+	slog.Debug("sending messages for match", "matchId", matchID)
 	err = a.sendEventsToSlack(ctx, messages)
 	if err != nil {
 		slog.Error("failed to send message to slack", "error", err)
@@ -146,12 +140,10 @@ func (a *app) processMatch(ctx context.Context, matchID string) error {
 }
 
 func (a *app) sendEventsToSlack(ctx context.Context, events []string) error {
-	slog.Debug("Got messages for slack", "count", len(events))
 	for _, evt := range events {
 		if strings.TrimSpace(evt) == "" {
 			continue
 		}
-		slog.Debug("sending message", "message", evt)
 		payload := models.SlackMessage{Text: evt}
 		b, err := json.Marshal(payload)
 		if err != nil {

@@ -2,7 +2,6 @@ package database
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -29,7 +28,11 @@ func NewRedisClient(address string, password string, db int) *redisClient {
 }
 
 func (r *redisClient) AddMatch(ctx context.Context, match models.Match) error {
-	_, err := r.client.HMSet(ctx, getRedisMatchKey(match.MatchId), match).Result()
+	data, err := match.GetMap()
+	if err != nil {
+		return fmt.Errorf("failed to format match. %w", err)
+	}
+	_, err = r.client.HSet(ctx, getRedisMatchKey(match.MatchId), data).Result()
 	if err != nil {
 		return fmt.Errorf("failed to save match to redis. %w", err)
 	}
@@ -38,51 +41,52 @@ func (r *redisClient) AddMatch(ctx context.Context, match models.Match) error {
 
 func (r *redisClient) GetMatch(ctx context.Context, matchID string) (models.Match, error) {
 	key := getRedisMatchKey(matchID)
-	val, err := r.client.Get(ctx, key).Result()
+	val, err := r.client.HGetAll(ctx, key).Result()
 	if err != nil && err != redis.Nil {
 		return models.Match{}, fmt.Errorf("failed to get match %s from database. %w", matchID, err)
 	}
 	if err != nil {
 		return models.Match{}, ErrMatchNotFound
 	}
-	match := models.Match{}
-	err = json.Unmarshal([]byte(val), &match)
+	match, err := models.MatchFromRedis(val)
 	if err != nil {
 		return models.Match{}, fmt.Errorf("failed to unmarshal match. %w", err)
 	}
 	return match, nil
 }
 
-func (r *redisClient) GetMatchEvents(ctx context.Context, matchID string) ([]string, error) {
-	key := getRedisEventsKey(matchID)
-	val, err := r.client.Get(ctx, key).Result()
+func (r *redisClient) GetMatchEvents(ctx context.Context, matchID string) (models.Match, error) {
+	key := getRedisMatchKey(matchID)
+	val, err := r.client.HGetAll(ctx, key).Result()
 	if err != nil && err != redis.Nil {
-		return []string{}, fmt.Errorf("failed to get events for match %s. %w", matchID, err)
+		return models.Match{}, fmt.Errorf("failed to get events for match %s. %w", matchID, err)
 	}
 	if err != nil {
-		return []string{}, nil
+		return models.Match{}, nil
 	}
-	results := []string{}
-	err = json.Unmarshal([]byte(val), &results)
+	match, err := models.MatchFromRedis(val)
 	if err != nil {
-		return []string{}, fmt.Errorf("failed to unmarshal events. %w", err)
+		return models.Match{}, fmt.Errorf("failed to unmarshal events. %w", err)
 	}
-	return results, nil
+	return match, nil
 }
 
 func (r *redisClient) DeleteMatch(ctx context.Context, matchID string) error {
 	eventKey := getRedisMatchKey(matchID)
-	matchKey := getRedisEventsKey(matchID)
-	_, err := r.client.Del(ctx, eventKey, matchKey).Result()
+	_, err := r.client.Del(ctx, eventKey).Result()
 	if err != nil {
 		return fmt.Errorf("failed to delete from redis. %w", err)
 	}
 	return nil
 }
 
-func (r *redisClient) UpdateMatchEvents(ctx context.Context, matchID string, events []string) error {
-	key := getRedisEventsKey(matchID)
-	_, err := r.client.HMSet(ctx, key, events).Result()
+func (r *redisClient) UpdateMatch(ctx context.Context, match models.Match) error {
+	data, err := match.GetMap()
+	if err != nil {
+		return fmt.Errorf("failed to format match. %w", err)
+	}
+	key := getRedisMatchKey(match.MatchId)
+	_, err = r.client.HSet(ctx, key, data).Result()
 	if err != nil {
 		return fmt.Errorf("failed to update events in redis. %w", err)
 	}
@@ -103,8 +107,4 @@ func (r *redisClient) GetAllMatches(ctx context.Context) ([]string, error) {
 
 func getRedisMatchKey(matchID string) string {
 	return "match:" + matchID
-}
-
-func getRedisEventsKey(matchID string) string {
-	return "events:" + matchID
 }

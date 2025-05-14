@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -93,16 +94,21 @@ func (r *redisClient) UpdateMatch(ctx context.Context, match models.Match) error
 	return nil
 }
 
-func (r *redisClient) GetAllMatches(ctx context.Context) ([]string, error) {
+func (r *redisClient) GetAllMatches(ctx context.Context) ([]models.Match, error) {
 	keys, err := r.client.Keys(ctx, "match:*").Result()
 	if err != nil {
-		return []string{}, fmt.Errorf("failed to get keys from redis. %w", err)
+		return []models.Match{}, fmt.Errorf("failed to get keys from redis. %w", err)
 	}
-	results := []string{}
+	matches := []models.Match{}
 	for _, k := range keys {
-		results = append(results, strings.TrimPrefix(k, "match:"))
+		matchID := strings.TrimPrefix(k, "match:")
+		match, err := r.GetMatch(ctx, matchID)
+		if err != nil && !errors.Is(err, ErrMatchNotFound) {
+			return []models.Match{}, fmt.Errorf("failed to get match from the database. %w", err)
+		}
+		matches = append(matches, match)
 	}
-	return results, nil
+	return matches, nil
 }
 
 func getRedisMatchKey(matchID string) string {

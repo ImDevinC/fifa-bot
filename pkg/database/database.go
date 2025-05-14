@@ -14,5 +14,5 @@ type Database interface {
 	GetMatch(ctx context.Context, matchID string) (models.Match, error)
 	DeleteMatch(ctx context.Context, matchID string) error
 	UpdateMatch(ctx context.Context, match models.Match) error
-	GetAllMatches(ctx context.Context) ([]string, error)
+	GetAllMatches(ctx context.Context) ([]models.Match, error)
 }

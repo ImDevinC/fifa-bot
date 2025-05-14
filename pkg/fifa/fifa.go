@@ -3,7 +3,6 @@ package fifa
 import (
 	"context"
 	"fmt"
-	"log/slog"
 	"sort"
 	"strings"
 
@@ -90,8 +89,6 @@ func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *models.M
 	if _, exists := eventsToSkip[evt.Type]; exists {
 		return ""
 	}
-
-	slog.Debug("processing event", "event", evt, "match", opts)
 
 	prefix := ""
 	suffix := ""

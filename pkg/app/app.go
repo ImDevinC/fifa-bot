@@ -20,20 +20,22 @@ import (
 )
 
 type app struct {
-	db              database.Database
-	fifa            *go_fifa.Client
-	slackWebhookURL string
-	CompetitionId   string
-	matches         map[string]models.Match
+	db               database.Database
+	fifa             *go_fifa.Client
+	slackWebhookURL  string
+	CompetitionId    string
+	matches          map[string]models.Match
+	sleepTimeSeconds time.Duration
 }
 
-func New(db database.Database, fifa *go_fifa.Client, slackWebhookURL string, competitionId string) *app {
+func New(db database.Database, fifa *go_fifa.Client, slackWebhookURL string, competitionId string, sleepTimeSeconds int) *app {
 	return &app{
-		db:              db,
-		fifa:            fifa,
-		slackWebhookURL: slackWebhookURL,
-		CompetitionId:   competitionId,
-		matches:         map[string]models.Match{},
+		db:               db,
+		fifa:             fifa,
+		slackWebhookURL:  slackWebhookURL,
+		CompetitionId:    competitionId,
+		matches:          map[string]models.Match{},
+		sleepTimeSeconds: time.Duration(sleepTimeSeconds),
 	}
 }
 
@@ -63,7 +65,7 @@ func (a *app) Run(ctx context.Context) error {
 			if err != nil {
 				slog.Error("failed to update events", "error", err)
 			}
-			time.Sleep(10 * time.Second)
+			time.Sleep(a.sleepTimeSeconds * time.Second)
 		}
 	}
 }

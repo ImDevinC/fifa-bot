@@ -3,9 +3,10 @@ package app
 import "github.com/kelseyhightower/envconfig"
 
 type Config struct {
-	SlackWebhookURL string `envconfig:"SLACK_WEBHOOK_URL" required:"true"`
-	CompetitionID   string `envconfig:"COMPETITION_ID"`
-	Redis           struct {
+	SlackWebhookURL  string `envconfig:"SLACK_WEBHOOK_URL" required:"true"`
+	CompetitionID    string `envconfig:"COMPETITION_ID"`
+	SleepTimeSeconds int    `envconfig:"SLEEP_TIME_SECONDS" default:"60"`
+	Redis            struct {
 		Address  string `envconfig:"REDIS_ADDRESS" required:"true"`
 		Password string `envconfig:"REDIS_PASSWORD"`
 		Database int    `envconfig:"REDIS_DB" required:"true"`

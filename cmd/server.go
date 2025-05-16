@@ -41,7 +41,7 @@ func main() {
 		}()
 	}
 
-	server := app.New(db, &fc, cfg.SlackWebhookURL, cfg.CompetitionID)
+	server := app.New(db, &fc, cfg.SlackWebhookURL, cfg.CompetitionID, cfg.SleepTimeSeconds)
 	if err := server.Run(context.Background()); err != nil {
 		logger.Error("server failed", "error", err)
 		os.Exit(1)

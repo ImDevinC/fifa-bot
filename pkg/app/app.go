@@ -38,6 +38,7 @@ func New(db database.Database, fifa *go_fifa.Client, slackWebhookURL string, com
 		CompetitionId:    competitionId,
 		matches:          map[string]models.Match{},
 		sleepTimeSeconds: time.Duration(sleepTimeSeconds),
+		matchMutex:       &sync.Mutex{},
 	}
 }
 

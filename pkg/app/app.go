@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/imdevinc/fifa-bot/pkg/database"
@@ -26,6 +27,7 @@ type app struct {
 	CompetitionId    string
 	matches          map[string]models.Match
 	sleepTimeSeconds time.Duration
+	matchMutex       *sync.Mutex
 }
 
 func New(db database.Database, fifa *go_fifa.Client, slackWebhookURL string, competitionId string, sleepTimeSeconds int) *app {
@@ -124,7 +126,9 @@ func (a *app) processMatch(ctx context.Context, match *models.Match) error {
 		if err != nil {
 			return fmt.Errorf("failed to save match %s events to the database. %w", match.MatchId, err)
 		}
+		a.matchMutex.Lock()
 		a.matches[match.MatchId] = *match
+		a.matchMutex.Unlock()
 	}
 
 	if len(messages) > 0 {
@@ -138,11 +142,14 @@ func (a *app) processMatch(ctx context.Context, match *models.Match) error {
 	if !matchData.Done {
 		return nil
 	}
+	slog.Debug("match is done", "matchId", match.MatchId)
 	err = a.db.DeleteMatch(ctx, match.MatchId)
 	if err != nil {
 		return fmt.Errorf("failed to delete match %s. %w", match.MatchId, err)
 	}
+	a.matchMutex.Lock()
 	delete(a.matches, match.MatchId)
+	a.matchMutex.Unlock()
 	return nil
 }
 

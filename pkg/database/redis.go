@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/imdevinc/fifa-bot/pkg/models"
 	"github.com/redis/go-redis/v9"
@@ -33,9 +34,14 @@ func (r *redisClient) AddMatch(ctx context.Context, match models.Match) error {
 	if err != nil {
 		return fmt.Errorf("failed to format match. %w", err)
 	}
-	_, err = r.client.HSet(ctx, getRedisMatchKey(match.MatchId), data).Result()
+	key := getRedisMatchKey(match.MatchId)
+	_, err = r.client.HSet(ctx, key, data).Result()
 	if err != nil {
 		return fmt.Errorf("failed to save match to redis. %w", err)
+	}
+	resp := r.client.Expire(ctx, key, time.Hour*24)
+	if resp.Err() != nil {
+		return fmt.Errorf("failed to mark match for expiration. %w", err)
 	}
 	return nil
 }

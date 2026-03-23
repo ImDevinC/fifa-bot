@@ -41,6 +41,15 @@ func main() {
 		}()
 	}
 
+	go func() {
+		logger.Info("starting health server", "port", cfg.HealthPort)
+		handler := app.NewHealthHandler(db)
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.HealthPort), handler); err != nil {
+			logger.Error("health server failed", "error", err)
+			os.Exit(1)
+		}
+	}()
+
 	server := app.New(db, &fc, cfg.SlackWebhookURL, cfg.CompetitionID, cfg.SleepTimeSeconds)
 	if err := server.Run(context.Background()); err != nil {
 		logger.Error("server failed", "error", err)

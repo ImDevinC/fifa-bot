@@ -39,8 +39,17 @@ The bot is configured via environment variables:
 - `SLEEP_TIME_SECONDS`: Polling interval in seconds (default: 60)
 - `REDIS_PASSWORD`: Redis password if required
 - `LOG_LEVEL`: Logging level - DEBUG, INFO, WARN, ERROR (default: WARN)
+- `HEALTH_PORT`: Health check server port (default: 8080)
 - `ENABLE_PROFILING`: Enable pprof endpoint (default: false)
 - `PROFILING_PORT`: pprof server port (default: 8080)
+
+## Health Check
+
+The service exposes a health endpoint at `GET /healthz` on `HEALTH_PORT`.
+The endpoint returns:
+
+- `200 OK` when Redis is reachable
+- `503 Service Unavailable` when Redis ping fails
 
 ## Installation & Usage
 

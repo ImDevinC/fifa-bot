@@ -12,6 +12,7 @@ type Config struct {
 		Database int    `envconfig:"REDIS_DB" required:"true"`
 	}
 	LogLevel        string `envconfig:"LOG_LEVEL" default:"WARN"`
+	HealthPort      int    `envconfig:"HEALTH_PORT" default:"8080"`
 	EnableProfiling bool   `envconfig:"ENABLE_PROFILING" default:"false"`
 	ProfilingPort   int    `envconfig:"PROFILING_PORT" default:"8080"`
 }

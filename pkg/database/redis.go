@@ -117,6 +117,13 @@ func (r *redisClient) GetAllMatches(ctx context.Context) ([]models.Match, error)
 	return matches, nil
 }
 
+func (r *redisClient) Ping(ctx context.Context) error {
+	if err := r.client.Ping(ctx).Err(); err != nil {
+		return fmt.Errorf("failed redis ping. %w", err)
+	}
+	return nil
+}
+
 func getRedisMatchKey(matchID string) string {
 	return "match:" + matchID
 }

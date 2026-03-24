@@ -14,6 +14,10 @@ import (
 	_ "net/http/pprof"
 )
 
+type pinger interface {
+	Ping(ctx context.Context) error
+}
+
 func main() {
 	cfg, err := app.GetConfigFromEnv()
 	if err != nil {
@@ -30,6 +34,17 @@ func main() {
 	slog.SetDefault(logger)
 	db := database.NewRedisClient(cfg.Redis.Address, cfg.Redis.Password, cfg.Redis.Database)
 	fc := go_fifa.Client{}
+
+	go func() {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/", handle)
+		mux.HandleFunc("/healthz", healthzHandler(db, logger))
+
+		logger.Info("starting health server", "port", cfg.HealthPort)
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.HealthPort), mux); err != nil {
+			logger.Error("health server failed", "error", err)
+		}
+	}()
 
 	if cfg.EnableProfiling {
 		go func() {
@@ -50,4 +65,23 @@ func main() {
 
 func handle(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
+}
+
+func healthzHandler(db pinger, logger *slog.Logger) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+
+		if err := db.Ping(r.Context()); err != nil {
+			if logger != nil {
+				logger.Error("health check failed", "error", err)
+			}
+			http.Error(w, "redis unavailable", http.StatusServiceUnavailable)
+			return
+		}
+
+		_, _ = w.Write([]byte("ok"))
+	}
 }

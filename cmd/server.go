@@ -31,6 +31,8 @@ func main() {
 	db := database.NewRedisClient(cfg.Redis.Address, cfg.Redis.Password, cfg.Redis.Database)
 	fc := go_fifa.Client{}
 
+	go startHealthServer(db, cfg.HealthPort)
+
 	if cfg.EnableProfiling {
 		go func() {
 			logger.Info("starting pprof server", "port", cfg.ProfilingPort)
@@ -50,4 +52,29 @@ func main() {
 
 func handle(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
+}
+
+func startHealthServer(db database.Database, port int) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodGet {
+			w.WriteHeader(http.StatusMethodNotAllowed)
+			return
+		}
+
+		if err := db.Ping(r.Context()); err != nil {
+			slog.Error("health check failed", "error", err)
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, _ = w.Write([]byte("unhealthy"))
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	})
+
+	slog.Info("starting health server", "port", port)
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", port), mux); err != nil {
+		slog.Error("health server failed", "error", err)
+	}
 }

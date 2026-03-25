@@ -117,6 +117,14 @@ func (r *redisClient) GetAllMatches(ctx context.Context) ([]models.Match, error)
 	return matches, nil
 }
 
+func (r *redisClient) Health(ctx context.Context) error {
+	_, err := r.client.Ping(ctx).Result()
+	if err != nil {
+		return fmt.Errorf("redis health check failed. %w", err)
+	}
+	return nil
+}
+
 func getRedisMatchKey(matchID string) string {
 	return "match:" + matchID
 }

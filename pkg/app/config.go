@@ -14,6 +14,7 @@ type Config struct {
 	LogLevel        string `envconfig:"LOG_LEVEL" default:"WARN"`
 	EnableProfiling bool   `envconfig:"ENABLE_PROFILING" default:"false"`
 	ProfilingPort   int    `envconfig:"PROFILING_PORT" default:"8080"`
+	HealthCheckPort int    `envconfig:"HEALTH_CHECK_PORT" default:"8081"`
 }
 
 func GetConfigFromEnv() (*Config, error) {

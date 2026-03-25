@@ -178,6 +178,10 @@ func (a *app) sendEventsToSlack(ctx context.Context, events []string) error {
 	return nil
 }
 
+func (a *app) HealthCheck(ctx context.Context) error {
+	return a.db.Health(ctx)
+}
+
 func findNewEvents(ctx context.Context, existingEvents []string, newEvents []go_fifa.TimelineEvent, opts *models.Match) ([]string, []string) {
 	eventMsgs := []string{}
 	eventIds := []string{}

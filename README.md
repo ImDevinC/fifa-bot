@@ -39,6 +39,7 @@ The bot is configured via environment variables:
 - `SLEEP_TIME_SECONDS`: Polling interval in seconds (default: 60)
 - `REDIS_PASSWORD`: Redis password if required
 - `LOG_LEVEL`: Logging level - DEBUG, INFO, WARN, ERROR (default: WARN)
+- `HEALTH_PORT`: HTTP port for the `/healthz` endpoint (default: 8081)
 - `ENABLE_PROFILING`: Enable pprof endpoint (default: false)
 - `PROFILING_PORT`: pprof server port (default: 8080)
 

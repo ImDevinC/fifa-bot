@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/imdevinc/fifa-bot/pkg/app"
 	"github.com/imdevinc/fifa-bot/pkg/database"
@@ -42,6 +43,30 @@ func main() {
 	}
 
 	server := app.New(db, &fc, cfg.SlackWebhookURL, cfg.CompetitionID, cfg.SleepTimeSeconds)
+
+	// Start health check endpoint
+	go func() {
+		http.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) {
+			if r.Method != http.MethodGet {
+				w.WriteHeader(http.StatusMethodNotAllowed)
+				return
+			}
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if err := server.Health(ctx); err != nil {
+				logger.Error("health check failed", "error", err)
+				w.WriteHeader(http.StatusServiceUnavailable)
+				return
+			}
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte("OK"))
+		})
+		logger.Info("starting health check server", "port", cfg.HealthPort)
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.HealthPort), nil); err != nil {
+			logger.Error("health check server failed", "error", err)
+		}
+	}()
+
 	if err := server.Run(context.Background()); err != nil {
 		logger.Error("server failed", "error", err)
 		os.Exit(1)

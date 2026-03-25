@@ -42,6 +42,10 @@ func New(db database.Database, fifa *go_fifa.Client, slackWebhookURL string, com
 	}
 }
 
+func (a *app) Health(ctx context.Context) error {
+	return a.db.Ping(ctx)
+}
+
 func (a *app) Run(ctx context.Context) error {
 	matches, err := a.db.GetAllMatches(ctx)
 	if err != nil {

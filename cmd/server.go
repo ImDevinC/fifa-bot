@@ -41,6 +41,15 @@ func main() {
 		}()
 	}
 
+	go func() {
+		healthMux := http.NewServeMux()
+		healthMux.HandleFunc("/healthz", app.HealthzHandler(db))
+		logger.Info("starting health check server", "port", cfg.HealthPort)
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.HealthPort), healthMux); err != nil {
+			logger.Error("health check server failed", "error", err)
+		}
+	}()
+
 	server := app.New(db, &fc, cfg.SlackWebhookURL, cfg.CompetitionID, cfg.SleepTimeSeconds)
 	if err := server.Run(context.Background()); err != nil {
 		logger.Error("server failed", "error", err)

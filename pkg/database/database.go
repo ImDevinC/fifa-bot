@@ -15,4 +15,9 @@ type Database interface {
 	DeleteMatch(ctx context.Context, matchID string) error
 	UpdateMatch(ctx context.Context, match models.Match) error
 	GetAllMatches(ctx context.Context) ([]models.Match, error)
+	HealthCheck(ctx context.Context) error
+}
+
+type HealthChecker interface {
+	HealthCheck(ctx context.Context) error
 }

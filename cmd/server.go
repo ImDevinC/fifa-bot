@@ -42,6 +42,17 @@ func main() {
 	}
 
 	server := app.New(db, &fc, cfg.SlackWebhookURL, cfg.CompetitionID, cfg.SleepTimeSeconds)
+
+	// Start health check HTTP server
+	go func() {
+		logger.Info("starting health check server", "port", cfg.HealthCheckPort)
+		mux := http.NewServeMux()
+		mux.HandleFunc("/healthz", server.HealthzHandler)
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.HealthCheckPort), mux); err != nil {
+			logger.Error("health check server failed", "error", err)
+		}
+	}()
+
 	if err := server.Run(context.Background()); err != nil {
 		logger.Error("server failed", "error", err)
 		os.Exit(1)

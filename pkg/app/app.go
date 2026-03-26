@@ -42,6 +42,29 @@ func New(db database.Database, fifa *go_fifa.Client, slackWebhookURL string, com
 	}
 }
 
+func (a *app) HealthzHandler(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+	defer cancel()
+
+	err := a.db.HealthCheck(ctx)
+	if err != nil {
+		slog.Error("health check failed", "error", err)
+		w.WriteHeader(http.StatusServiceUnavailable)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"status": "unhealthy",
+			"error":  err.Error(),
+		})
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"status": "healthy",
+	})
+}
+
 func (a *app) Run(ctx context.Context) error {
 	matches, err := a.db.GetAllMatches(ctx)
 	if err != nil {

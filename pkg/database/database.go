@@ -15,4 +15,6 @@ type Database interface {
 	DeleteMatch(ctx context.Context, matchID string) error
 	UpdateMatch(ctx context.Context, match models.Match) error
 	GetAllMatches(ctx context.Context) ([]models.Match, error)
+	// Ping checks the database connection health
+	Ping(ctx context.Context) error
 }

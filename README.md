@@ -41,6 +41,18 @@ The bot is configured via environment variables:
 - `LOG_LEVEL`: Logging level - DEBUG, INFO, WARN, ERROR (default: WARN)
 - `ENABLE_PROFILING`: Enable pprof endpoint (default: false)
 - `PROFILING_PORT`: pprof server port (default: 8080)
+- `ENABLE_HEALTHZ`: Enable health check endpoint (default: true)
+- `HEALTHZ_PORT`: Health check server port (default: 8081)
+
+## Health Check
+
+The bot exposes a `/healthz` endpoint (enabled by default on port 8081) for Kubernetes liveness/readiness probes. The health check validates that the Redis connection is healthy.
+
+```bash
+curl http://localhost:8081/healthz
+# Returns "ok" with status 200 if healthy
+# Returns "unhealthy: redis connection failed" with status 503 if unhealthy
+```
 
 ## Installation & Usage
 

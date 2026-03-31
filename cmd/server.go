@@ -10,6 +10,7 @@ import (
 
 	"github.com/imdevinc/fifa-bot/pkg/app"
 	"github.com/imdevinc/fifa-bot/pkg/database"
+	"github.com/imdevinc/fifa-bot/pkg/healthz"
 	go_fifa "github.com/imdevinc/go-fifa"
 	_ "net/http/pprof"
 )
@@ -37,6 +38,17 @@ func main() {
 			http.HandleFunc("/", handle)
 			if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.ProfilingPort), nil); err != nil {
 				logger.Error("profiling server failed", "error", err)
+			}
+		}()
+	}
+
+	if cfg.EnableHealthz {
+		go func() {
+			logger.Info("starting healthz server", "port", cfg.HealthzPort)
+			mux := http.NewServeMux()
+			mux.HandleFunc("/healthz", healthz.Handler(db))
+			if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.HealthzPort), mux); err != nil {
+				logger.Error("healthz server failed", "error", err)
 			}
 		}()
 	}

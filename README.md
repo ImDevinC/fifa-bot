@@ -24,6 +24,7 @@ FIFA Bot monitors live FIFA matches and sends real-time notifications to a Slack
 - **Concurrent processing**: Handles multiple matches simultaneously
 - **Docker support**: Containerized deployment ready
 - **Profiling support**: Optional pprof endpoint for performance monitoring
+- **Health checks**: `/healthz` endpoint validates Redis connectivity
 
 ## Configuration
 
@@ -39,6 +40,7 @@ The bot is configured via environment variables:
 - `SLEEP_TIME_SECONDS`: Polling interval in seconds (default: 60)
 - `REDIS_PASSWORD`: Redis password if required
 - `LOG_LEVEL`: Logging level - DEBUG, INFO, WARN, ERROR (default: WARN)
+- `HEALTH_PORT`: Health check server port serving `/healthz` (default: 8081)
 - `ENABLE_PROFILING`: Enable pprof endpoint (default: false)
 - `PROFILING_PORT`: pprof server port (default: 8080)
 

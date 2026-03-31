@@ -120,3 +120,8 @@ func (r *redisClient) GetAllMatches(ctx context.Context) ([]models.Match, error)
 func getRedisMatchKey(matchID string) string {
 	return "match:" + matchID
 }
+
+// Ping checks if the Redis connection is healthy by sending a PING command
+func (r *redisClient) Ping(ctx context.Context) error {
+	return r.client.Ping(ctx).Err()
+}

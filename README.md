@@ -24,6 +24,7 @@ FIFA Bot monitors live FIFA matches and sends real-time notifications to a Slack
 - **Concurrent processing**: Handles multiple matches simultaneously
 - **Docker support**: Containerized deployment ready
 - **Profiling support**: Optional pprof endpoint for performance monitoring
+- **Health checks**: Built-in `/healthz` endpoint for Kubernetes liveness/readiness probes
 
 ## Configuration
 
@@ -41,6 +42,8 @@ The bot is configured via environment variables:
 - `LOG_LEVEL`: Logging level - DEBUG, INFO, WARN, ERROR (default: WARN)
 - `ENABLE_PROFILING`: Enable pprof endpoint (default: false)
 - `PROFILING_PORT`: pprof server port (default: 8080)
+- `ENABLE_HEALTH_CHECK`: Enable health check endpoint (default: true)
+- `HEALTH_CHECK_PORT`: Health check server port (default: 8081)
 
 ## Installation & Usage
 
@@ -112,6 +115,31 @@ services:
 2. Add Incoming Webhooks feature
 3. Create a webhook for your desired channel
 4. Use the webhook URL as `SLACK_WEBHOOK_URL`
+
+## Health Checks
+
+The bot includes a health check endpoint for container orchestration platforms like Kubernetes.
+
+- **Endpoint**: `GET /healthz`
+- **Port**: Configurable via `HEALTH_CHECK_PORT` (default: 8081)
+- **Behavior**: Returns HTTP 200 if Redis connection is healthy, HTTP 503 otherwise
+
+### Kubernetes Example
+
+```yaml
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8081
+  initialDelaySeconds: 5
+  periodSeconds: 10
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: 8081
+  initialDelaySeconds: 5
+  periodSeconds: 5
+```
 
 ## Development
 

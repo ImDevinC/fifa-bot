@@ -41,6 +41,8 @@ The bot is configured via environment variables:
 - `LOG_LEVEL`: Logging level - DEBUG, INFO, WARN, ERROR (default: WARN)
 - `ENABLE_PROFILING`: Enable pprof endpoint (default: false)
 - `PROFILING_PORT`: pprof server port (default: 8080)
+- `ENABLE_HEALTH_CHECK`: Enable health check endpoint (default: true)
+- `HEALTH_CHECK_PORT`: Health check server port (default: 8081)
 
 ## Installation & Usage
 

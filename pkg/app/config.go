@@ -11,9 +11,11 @@ type Config struct {
 		Password string `envconfig:"REDIS_PASSWORD"`
 		Database int    `envconfig:"REDIS_DB" required:"true"`
 	}
-	LogLevel        string `envconfig:"LOG_LEVEL" default:"WARN"`
-	EnableProfiling bool   `envconfig:"ENABLE_PROFILING" default:"false"`
-	ProfilingPort   int    `envconfig:"PROFILING_PORT" default:"8080"`
+	LogLevel          string `envconfig:"LOG_LEVEL" default:"WARN"`
+	EnableProfiling   bool   `envconfig:"ENABLE_PROFILING" default:"false"`
+	ProfilingPort     int    `envconfig:"PROFILING_PORT" default:"8080"`
+	EnableHealthCheck bool   `envconfig:"ENABLE_HEALTH_CHECK" default:"true"`
+	HealthCheckPort   int    `envconfig:"HEALTH_CHECK_PORT" default:"8081"`
 }
 
 func GetConfigFromEnv() (*Config, error) {

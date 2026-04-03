@@ -41,6 +41,17 @@ func main() {
 		}()
 	}
 
+	if cfg.EnableHealthCheck {
+		go func() {
+			logger.Info("starting health check server", "port", cfg.HealthCheckPort)
+			mux := http.NewServeMux()
+			mux.HandleFunc("/healthz", healthCheckHandler(db))
+			if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.HealthCheckPort), mux); err != nil {
+				logger.Error("health check server failed", "error", err)
+			}
+		}()
+	}
+
 	server := app.New(db, &fc, cfg.SlackWebhookURL, cfg.CompetitionID, cfg.SleepTimeSeconds)
 	if err := server.Run(context.Background()); err != nil {
 		logger.Error("server failed", "error", err)
@@ -50,4 +61,18 @@ func main() {
 
 func handle(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
+}
+
+func healthCheckHandler(db database.Database) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+		if err := db.Ping(ctx); err != nil {
+			slog.Error("health check failed", "error", err)
+			w.WriteHeader(http.StatusServiceUnavailable)
+			w.Write([]byte("unhealthy: redis connection failed"))
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("ok"))
+	}
 }

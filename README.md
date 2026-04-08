@@ -24,6 +24,7 @@ FIFA Bot monitors live FIFA matches and sends real-time notifications to a Slack
 - **Concurrent processing**: Handles multiple matches simultaneously
 - **Docker support**: Containerized deployment ready
 - **Profiling support**: Optional pprof endpoint for performance monitoring
+- **Health checks**: Built-in `/healthz` endpoint for Kubernetes liveness/readiness probes
 
 ## Configuration
 
@@ -43,6 +44,69 @@ The bot is configured via environment variables:
 - `PROFILING_PORT`: pprof server port (default: 8080)
 - `ENABLE_HEALTH_CHECK`: Enable health check endpoint (default: true)
 - `HEALTH_CHECK_PORT`: Health check server port (default: 8081)
+
+## Health Checks
+
+The bot includes a built-in health check endpoint for use with Kubernetes liveness and readiness probes. This endpoint validates that the application is running and can communicate with Redis.
+
+### Endpoint
+
+- **URL**: `GET /healthz`
+- **Port**: Configurable via `HEALTH_CHECK_PORT` (default: 8081)
+
+### Responses
+
+| Status | Body | Description |
+|--------|------|-------------|
+| 200 OK | `ok` | Application is healthy and Redis is reachable |
+| 503 Service Unavailable | `unhealthy: redis connection failed` | Redis connection failed |
+
+### Usage Example
+
+```bash
+# Check health status
+curl http://localhost:8081/healthz
+```
+
+### Kubernetes Configuration
+
+Configure liveness and readiness probes in your pod specification:
+
+```yaml
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+    - name: fifa-bot
+      image: ghcr.io/imdevinc/fifa-bot:latest
+      ports:
+        - containerPort: 8081
+          name: health
+      livenessProbe:
+        httpGet:
+          path: /healthz
+          port: health
+        initialDelaySeconds: 10
+        periodSeconds: 30
+        timeoutSeconds: 5
+        failureThreshold: 3
+      readinessProbe:
+        httpGet:
+          path: /healthz
+          port: health
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        timeoutSeconds: 5
+        failureThreshold: 3
+```
+
+### Disabling Health Checks
+
+If you don't need the health check endpoint (e.g., running outside of Kubernetes), you can disable it:
+
+```bash
+export ENABLE_HEALTH_CHECK=false
+```
 
 ## Installation & Usage
 

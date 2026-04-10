@@ -31,6 +31,15 @@ func main() {
 	db := database.NewRedisClient(cfg.Redis.Address, cfg.Redis.Password, cfg.Redis.Database)
 	fc := go_fifa.Client{}
 
+	go func() {
+		healthMux := http.NewServeMux()
+		healthMux.HandleFunc("/healthz", app.NewHealthHandler(db))
+		logger.Info("starting health check server", "port", cfg.HealthPort)
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.HealthPort), healthMux); err != nil {
+			logger.Error("health check server failed", "error", err)
+		}
+	}()
+
 	if cfg.EnableProfiling {
 		go func() {
 			logger.Info("starting pprof server", "port", cfg.ProfilingPort)

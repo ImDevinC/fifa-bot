@@ -44,6 +44,39 @@ The bot is configured via environment variables:
 - `ENABLE_PROFILING`: Enable pprof endpoint (default: false)
 - `PROFILING_PORT`: pprof server port (default: 8080)
 
+## Health Checks
+
+The bot exposes a dedicated `GET /healthz` endpoint (on `HEALTH_PORT`) that performs a live
+Redis ping before returning.
+
+- Returns `200 OK` when Redis is reachable and the bot is ready to process matches.
+- Returns `503 Service Unavailable` when Redis is unavailable.
+- Uses a short request timeout internally so failed checks return quickly.
+
+This endpoint is intended for container orchestration readiness/liveness checks and external
+uptime monitors.
+
+### Quick verification
+
+```bash
+curl -i http://localhost:8081/healthz
+```
+
+### Docker Compose healthcheck example
+
+```yaml
+services:
+  fifa-bot:
+    image: ghcr.io/imdevinc/fifa-bot:latest
+    environment:
+      - HEALTH_PORT=8081
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8081/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+```
+
 ## Installation & Usage
 
 ### Docker (Recommended)

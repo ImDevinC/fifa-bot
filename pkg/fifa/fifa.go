@@ -137,6 +137,8 @@ func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *models.M
 			return ""
 		}
 		prefix = "Penalty awarded!"
+	case go_fifa.Hydration:
+		prefix = ":droplet:"
 	}
 	var msg string
 	if len(evt.Description) > 0 {

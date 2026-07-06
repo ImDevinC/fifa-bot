@@ -15,9 +15,13 @@ import (
 )
 
 func main() {
-	cfg, err := app.GetConfigFromEnv()
+	configFile := os.Getenv("CONFIG_FILE")
+	if configFile == "" {
+		configFile = "config.yaml"
+	}
+	cfg, err := app.LoadConfig(configFile)
 	if err != nil {
-		log.Fatal("failed to get config from env", "error", err)
+		log.Fatal("failed to load config", "error", err)
 		os.Exit(1)
 	}
 	var level slog.Level

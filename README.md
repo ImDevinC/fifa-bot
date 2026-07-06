@@ -27,20 +27,38 @@ FIFA Bot monitors live FIFA matches and sends real-time notifications to a Slack
 
 ## Configuration
 
-The bot is configured via environment variables:
+The bot is configured via a YAML file (default: `./config.yaml`) with environment variable overrides. Environment variables take precedence over values in the config file.
 
-### Required
-- `SLACK_WEBHOOK_URL`: Slack webhook URL for sending notifications
-- `REDIS_ADDRESS`: Redis server address
-- `REDIS_DB`: Redis database number
+### Config File (`config.yaml`)
 
-### Optional
-- `COMPETITION_ID`: Filter matches by specific competition (empty = all competitions)
-- `SLEEP_TIME_SECONDS`: Polling interval in seconds (default: 60)
-- `REDIS_PASSWORD`: Redis password if required
-- `LOG_LEVEL`: Logging level - DEBUG, INFO, WARN, ERROR (default: WARN)
-- `ENABLE_PROFILING`: Enable pprof endpoint (default: false)
-- `PROFILING_PORT`: pprof server port (default: 8080)
+```yaml
+slack_webhook_url: "https://hooks.slack.com/services/..."
+competition_id: "17"              # Optional: filter by competition
+sleep_time_seconds: 60            # Polling interval (default: 60)
+redis:
+  address: "localhost:6379"       # Required
+  password: ""                    # Optional
+  database: 0                     # Required
+log_level: "WARN"                 # DEBUG, INFO, WARN, ERROR (default: WARN)
+enable_profiling: false           # Enable pprof endpoint (default: false)
+profiling_port: 8080              # pprof server port (default: 8080)
+```
+
+### Environment Variable Overrides
+
+Any config value can be overridden by its corresponding environment variable:
+
+| Variable | Overrides | Required |
+|---|---|---|
+| `SLACK_WEBHOOK_URL` | `slack_webhook_url` | Yes |
+| `REDIS_ADDRESS` | `redis.address` | Yes |
+| `REDIS_DB` | `redis.database` | Yes |
+| `COMPETITION_ID` | `competition_id` | No |
+| `SLEEP_TIME_SECONDS` | `sleep_time_seconds` | No |
+| `REDIS_PASSWORD` | `redis.password` | No |
+| `LOG_LEVEL` | `log_level` | No |
+| `ENABLE_PROFILING` | `enable_profiling` | No |
+| `PROFILING_PORT` | `profiling_port` | No |
 
 ## Installation & Usage
 
@@ -135,7 +153,7 @@ docker build -t fifa-bot .
 - **FIFA API Client**: `github.com/imdevinc/go-fifa` - FIFA API integration
 - **Redis**: `github.com/redis/go-redis/v9` - Match state persistence  
 - **Logging**: `github.com/sirupsen/logrus` - Structured logging
-- **Configuration**: `github.com/kelseyhightower/envconfig` - Environment-based config
+- **Configuration**: `github.com/spf13/viper` - YAML + environment config
 - **Error Tracking**: `github.com/getsentry/sentry-go` - Error monitoring
 
 ## License

@@ -27,10 +27,14 @@ type app struct {
 	CompetitionId    string
 	matches          map[string]models.Match
 	sleepTimeSeconds time.Duration
+	eventsToSkip     map[go_fifa.MatchEvent]bool
 	matchMutex       *sync.Mutex
 }
 
-func New(db database.Database, fifa *go_fifa.Client, slackWebhookURL string, competitionId string, sleepTimeSeconds int) *app {
+func New(db database.Database, fifa *go_fifa.Client, slackWebhookURL string, competitionId string, sleepTimeSeconds int, eventsToSkip map[go_fifa.MatchEvent]bool) *app {
+	if eventsToSkip == nil {
+		eventsToSkip = make(map[go_fifa.MatchEvent]bool)
+	}
 	return &app{
 		db:               db,
 		fifa:             fifa,
@@ -38,6 +42,7 @@ func New(db database.Database, fifa *go_fifa.Client, slackWebhookURL string, com
 		CompetitionId:    competitionId,
 		matches:          map[string]models.Match{},
 		sleepTimeSeconds: time.Duration(sleepTimeSeconds),
+		eventsToSkip:     eventsToSkip,
 		matchMutex:       &sync.Mutex{},
 	}
 }
@@ -120,7 +125,7 @@ func (a *app) processMatch(ctx context.Context, match *models.Match) error {
 	if err != nil {
 		return fmt.Errorf("failed to get match %s events from FIFA. %w", match.MatchId, err)
 	}
-	ids, messages := findNewEvents(ctx, match.Events, matchData.NewEvents, match)
+	ids, messages := a.findNewEvents(ctx, match.Events, matchData.NewEvents, match)
 	existingEvents := match.Events
 	allEvents := append(existingEvents, ids...)
 	if len(allEvents) > len(existingEvents) {
@@ -178,7 +183,7 @@ func (a *app) sendEventsToSlack(ctx context.Context, events []string) error {
 	return nil
 }
 
-func findNewEvents(ctx context.Context, existingEvents []string, newEvents []go_fifa.TimelineEvent, opts *models.Match) ([]string, []string) {
+func (a *app) findNewEvents(ctx context.Context, existingEvents []string, newEvents []go_fifa.TimelineEvent, opts *models.Match) ([]string, []string) {
 	eventMsgs := []string{}
 	eventIds := []string{}
 
@@ -187,9 +192,9 @@ func findNewEvents(ctx context.Context, existingEvents []string, newEvents []go_
 		if eventFound {
 			continue
 		}
-		slog.Debug("found new event", "eventId", event.Id, "message", fifa.ProcessEvent(ctx, event, opts))
+		slog.Debug("found new event", "eventId", event.Id, "message", fifa.ProcessEvent(ctx, event, opts, a.eventsToSkip))
 		eventIds = append(eventIds, event.Id)
-		eventMsgs = append(eventMsgs, fifa.ProcessEvent(ctx, event, opts))
+		eventMsgs = append(eventMsgs, fifa.ProcessEvent(ctx, event, opts, a.eventsToSkip))
 	}
 	return eventIds, eventMsgs
 }

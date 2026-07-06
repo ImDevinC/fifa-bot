@@ -16,9 +16,10 @@ type Config struct {
 		Password string `mapstructure:"password"`
 		Database int    `mapstructure:"database"`
 	} `mapstructure:"redis"`
-	LogLevel        string `mapstructure:"log_level"`
-	EnableProfiling bool   `mapstructure:"enable_profiling"`
-	ProfilingPort   int    `mapstructure:"profiling_port"`
+	LogLevel        string   `mapstructure:"log_level"`
+	EnableProfiling bool     `mapstructure:"enable_profiling"`
+	ProfilingPort   int      `mapstructure:"profiling_port"`
+	SkipEvents      []string `mapstructure:"skip_events"`
 }
 
 func LoadConfig(configPath string) (*Config, error) {

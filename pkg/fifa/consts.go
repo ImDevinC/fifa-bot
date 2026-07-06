@@ -1,29 +1,68 @@
 package fifa
 
 import (
+	"fmt"
+	"strings"
+
 	go_fifa "github.com/imdevinc/go-fifa"
 )
 
-var eventsToSkip = map[go_fifa.MatchEvent]bool{
-	go_fifa.MatchPaused:  true,
-	go_fifa.MatchResumed: true,
-	go_fifa.GoalAttempt:  true,
-	go_fifa.Offside:      true,
-	go_fifa.CornerKick:   true,
-	go_fifa.FreeKickPost: true,
-	go_fifa.ShotBlocked:  true,
-	go_fifa.Foul:         true,
-	go_fifa.CoinToss:     true,
-	go_fifa.Unknown3:     true,
-	go_fifa.ThrowIn:      true,
-	go_fifa.Clearance:    true,
-	go_fifa.Unknown2:     true,
-	go_fifa.HitCrossbar:  true,
-	go_fifa.FoulUnknown:  true,
-	go_fifa.GoalieSaved:  true,
-	go_fifa.Pending:      true,
-	go_fifa.DroppedBall:  true,
-	go_fifa.Assist:       true,
+var eventNameToValue = map[string]go_fifa.MatchEvent{
+	"GoalScore":        go_fifa.GoalScore,
+	"Assist":           go_fifa.Assist,
+	"YellowCard":       go_fifa.YellowCard,
+	"RedCard":          go_fifa.RedCard,
+	"DoubleYellow":     go_fifa.DoubleYellow,
+	"Substitution":     go_fifa.Substitution,
+	"PenaltyAwarded":   go_fifa.PenaltyAwarded,
+	"MatchStart":       go_fifa.MatchStart,
+	"HalfEnd":          go_fifa.HalfEnd,
+	"MatchPaused":      go_fifa.MatchPaused,
+	"MatchResumed":     go_fifa.MatchResumed,
+	"GoalAttempt":      go_fifa.GoalAttempt,
+	"FoulUnknown":      go_fifa.FoulUnknown,
+	"Offside":          go_fifa.Offside,
+	"CornerKick":       go_fifa.CornerKick,
+	"ShotBlocked":      go_fifa.ShotBlocked,
+	"Foul":             go_fifa.Foul,
+	"CoinToss":         go_fifa.CoinToss,
+	"Unknown3":         go_fifa.Unknown3,
+	"DroppedBall":      go_fifa.DroppedBall,
+	"ThrowIn":          go_fifa.ThrowIn,
+	"Clearance":        go_fifa.Clearance,
+	"MatchEnd":         go_fifa.MatchEnd,
+	"Unknown2":         go_fifa.Unknown2,
+	"HitCrossbar":      go_fifa.HitCrossbar,
+	"HitPost":          go_fifa.HitPost,
+	"OwnGoal":          go_fifa.OwnGoal,
+	"HandBall":         go_fifa.HandBall,
+	"FreeKickGoal":     go_fifa.FreeKickGoal,
+	"PenaltyGoal":      go_fifa.PenaltyGoal,
+	"FreeKickCrossbar": go_fifa.FreeKickCrossbar,
+	"FreeKickPost":     go_fifa.FreeKickPost,
+	"GoalieSaved":      go_fifa.GoalieSaved,
+	"PenaltyMissed":    go_fifa.PenaltyMissed,
+	"PenaltyMissed2":   go_fifa.PenaltyMissed2,
+	"VARPenalty":       go_fifa.VARPenalty,
+	"Hydration":        go_fifa.Hydration,
+	"Pending":          go_fifa.Pending,
+}
+
+func ParseEventNames(names []string) (map[go_fifa.MatchEvent]bool, error) {
+	skipSet := make(map[go_fifa.MatchEvent]bool, len(names))
+	var unknown []string
+	for _, name := range names {
+		val, ok := eventNameToValue[strings.TrimSpace(name)]
+		if !ok {
+			unknown = append(unknown, name)
+			continue
+		}
+		skipSet[val] = true
+	}
+	if len(unknown) > 0 {
+		return skipSet, fmt.Errorf("unknown event name(s): %s", strings.Join(unknown, ", "))
+	}
+	return skipSet, nil
 }
 
 var flagEmojis = map[string]string{

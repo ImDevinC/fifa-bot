@@ -29,8 +29,9 @@ func TestLiveEvents(t *testing.T) {
 	if ok := assert.NoError(t, err); !ok {
 		t.Fail()
 	}
+	emptySkipSet := make(map[go_fifa.MatchEvent]bool)
 	for _, e := range resp.NewEvents {
-		msg := fifa.ProcessEvent(context.Background(), e, &m)
+		msg := fifa.ProcessEvent(context.Background(), e, &m, emptySkipSet)
 		if len(msg) == 0 {
 			continue
 		}

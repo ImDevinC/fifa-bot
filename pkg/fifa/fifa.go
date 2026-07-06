@@ -85,8 +85,8 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *model
 	return returnData, nil
 }
 
-func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *models.Match) string {
-	if _, exists := eventsToSkip[evt.Type]; exists {
+func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *models.Match, skipSet map[go_fifa.MatchEvent]bool) string {
+	if skipSet[evt.Type] {
 		return ""
 	}
 

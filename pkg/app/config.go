@@ -19,6 +19,7 @@ type Config struct {
 	LogLevel        string   `mapstructure:"log_level"`
 	EnableProfiling bool     `mapstructure:"enable_profiling"`
 	ProfilingPort   int      `mapstructure:"profiling_port"`
+	HealthPort      int      `mapstructure:"health_port"`
 	SkipEvents      []string `mapstructure:"skip_events"`
 }
 
@@ -29,6 +30,7 @@ func LoadConfig(configPath string) (*Config, error) {
 	v.SetDefault("log_level", "WARN")
 	v.SetDefault("enable_profiling", false)
 	v.SetDefault("profiling_port", 8080)
+	v.SetDefault("health_port", 8081)
 
 	v.SetConfigFile(configPath)
 	v.SetConfigType("yaml")

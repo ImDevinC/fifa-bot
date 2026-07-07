@@ -51,6 +51,17 @@ func main() {
 		logger.Warn("invalid skip_events entry, skipping unknown names", "error", err)
 	}
 
+	go func() {
+		mux := http.NewServeMux()
+		mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.WriteHeader(http.StatusOK)
+		})
+		logger.Info("starting health server", "port", cfg.HealthPort)
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.HealthPort), mux); err != nil {
+			logger.Error("health server failed", "error", err)
+		}
+	}()
+
 	server := app.New(db, &fc, cfg.SlackWebhookURL, cfg.CompetitionID, cfg.SleepTimeSeconds, skipSet)
 	if err := server.Run(context.Background()); err != nil {
 		logger.Error("server failed", "error", err)

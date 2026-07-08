@@ -102,8 +102,8 @@ func processShootoutResults(match *models.Match, homeTeamFlag string, awayTeamFl
 		results = match.AwayTeamPenaltyResults
 	}
 
-	miss := ":no_entry_sign:"
-	made := ":soccer:"
+	miss := ":red_circle:"
+	made := ":large_green_circle:"
 	if !success && strings.Contains(results, "-") {
 		results = strings.Replace(results, "-", miss, 1)
 	} else if !success && !strings.Contains(results, "-") {

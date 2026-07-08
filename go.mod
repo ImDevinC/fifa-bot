@@ -4,7 +4,7 @@ go 1.25.0
 
 require (
 	github.com/getsentry/sentry-go v0.15.0
-	github.com/imdevinc/go-fifa v0.3.0
+	github.com/imdevinc/go-fifa v0.3.1
 	github.com/redis/go-redis/v9 v9.8.0
 	github.com/sirupsen/logrus v1.9.0
 	github.com/spf13/viper v1.21.0

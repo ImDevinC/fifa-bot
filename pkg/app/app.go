@@ -94,7 +94,7 @@ func (a *app) getMatches(ctx context.Context) error {
 			slog.Debug("match already exists in db, no need to add", "matchID", m.MatchId)
 			continue
 		}
-		slog.Debug("adding match to database", "matchID", m.MatchId)
+		slog.Debug("adding match to database", "matchID", m.MatchId, "competitionId", m.CompetitionId, "seasonId", m.SeasonId, "stageId", m.StageId, "homeTeam", m.HomeTeamName, "awayTeam", m.AwayTeamName)
 		err = a.db.AddMatch(ctx, m)
 		if err != nil {
 			return fmt.Errorf("failed to add match %s to database. %w", m.MatchId, err)

@@ -28,6 +28,8 @@ func GetLiveMatches(ctx context.Context, fifaClient *go_fifa.Client) ([]models.M
 			AwayTeamName:   m.AwayTeam.Name[0].Description,
 			HomeTeamAbbrev: m.HomeTeam.Abbreviation,
 			AwayTeamAbbrev: m.AwayTeam.Abbreviation,
+			HomeTeamID:     m.HomeTeam.Id,
+			AwayTeamID:     m.AwayTeam.Id,
 		})
 	}
 	return returnValue, nil
@@ -85,6 +87,42 @@ func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *model
 	return returnData, nil
 }
 
+func processShootoutResults(match *models.Match, homeTeamFlag string, awayTeamFlag string, evt go_fifa.TimelineEvent, success bool) string {
+	if match.AwayTeamPenaltyResults == "" {
+		match.AwayTeamPenaltyResults = "-----"
+	}
+	if match.HomeTeamPenaltyResults == "" {
+		match.HomeTeamPenaltyResults = "-----"
+	}
+
+	results := ""
+	if evt.TeamId == match.HomeTeamID {
+		results = match.HomeTeamPenaltyResults
+	} else {
+		results = match.AwayTeamPenaltyResults
+	}
+
+	miss := ":no_entry_sign:"
+	made := ":soccer:"
+	if !success && strings.Contains(results, "-") {
+		results = strings.Replace(results, "-", miss, 1)
+	} else if !success && !strings.Contains(results, "-") {
+		results = results + miss
+	} else if success && strings.Contains(results, "-") {
+		results = strings.Replace(results, "-", made, 1)
+	} else {
+		results = results + made
+	}
+
+	if evt.TeamId == match.HomeTeamID {
+		match.HomeTeamPenaltyResults = results
+	} else {
+		match.AwayTeamPenaltyResults = results
+	}
+
+	return fmt.Sprintf("%s %s %s : %s %s %s", match.HomeTeamPenaltyResults, match.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, match.AwayTeamAbbrev, match.AwayTeamPenaltyResults)
+}
+
 func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *models.Match, skipSet map[go_fifa.MatchEvent]bool) string {
 	if skipSet[evt.Type] {
 		return ""
@@ -100,7 +138,7 @@ func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *models.M
 		go_fifa.PenaltyGoal:
 		prefix = ":soccer:"
 		if evt.Period == go_fifa.ShootoutPeriod {
-			suffix = fmt.Sprintf("%d (%d) %s %s : %s %s (%d) %d", evt.HomeGoals, evt.HomePenaltyGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayPenaltyGoals, evt.AwayGoals)
+			suffix = processShootoutResults(opts, homeTeamFlag, awayTeamFlag, evt, true)
 		} else {
 			suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayGoals)
 		}
@@ -117,20 +155,23 @@ func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *models.M
 	case go_fifa.MatchEnd:
 		prefix = ":clock12:"
 		if evt.Period == go_fifa.ShootoutPeriod {
-			suffix = fmt.Sprintf("%d (%d) %s %s : %s %s (%d) %d", evt.HomeGoals, evt.HomePenaltyGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayPenaltyGoals, evt.AwayGoals)
+			suffix = fmt.Sprintf("%s %s %s : %s %s %s", opts.HomeTeamPenaltyResults, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, opts.AwayTeamPenaltyResults)
 		} else {
 			suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayGoals)
 		}
 	case go_fifa.HalfEnd:
 		prefix = ":clock1230:"
 		if evt.Period == go_fifa.ShootoutPeriod {
-			suffix = fmt.Sprintf("%d (%d) %s %s : %s %s (%d) %d", evt.HomeGoals, evt.HomePenaltyGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayPenaltyGoals, evt.AwayGoals)
+			suffix = fmt.Sprintf("%s %s %s : %s %s %s", opts.HomeTeamPenaltyResults, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, opts.AwayTeamPenaltyResults)
 		} else {
 			suffix = fmt.Sprintf("%d %s %s : %s %s %d", evt.HomeGoals, opts.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, opts.AwayTeamAbbrev, evt.AwayGoals)
 		}
 	case go_fifa.PenaltyMissed,
 		go_fifa.PenaltyMissed2:
 		prefix = ":no_entry_sign:"
+		if evt.Period == go_fifa.ShootoutPeriod {
+			suffix = processShootoutResults(opts, homeTeamFlag, awayTeamFlag, evt, false)
+		}
 	case go_fifa.PenaltyAwarded:
 		// This causes some spam messaging, so skip during shootouts
 		if evt.Period == go_fifa.ShootoutPeriod {

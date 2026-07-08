@@ -192,9 +192,10 @@ func (a *app) findNewEvents(ctx context.Context, existingEvents []string, newEve
 		if eventFound {
 			continue
 		}
-		slog.Debug("found new event", "eventId", event.Id, "message", fifa.ProcessEvent(ctx, event, opts, a.eventsToSkip))
+		eventData := fifa.ProcessEvent(ctx, event, opts, a.eventsToSkip)
+		slog.Debug("found new event", "eventId", event.Id, "message", eventData)
 		eventIds = append(eventIds, event.Id)
-		eventMsgs = append(eventMsgs, fifa.ProcessEvent(ctx, event, opts, a.eventsToSkip))
+		eventMsgs = append(eventMsgs, eventData)
 	}
 	return eventIds, eventMsgs
 }

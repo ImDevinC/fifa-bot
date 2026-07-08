@@ -180,6 +180,8 @@ func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *models.M
 		prefix = "Penalty awarded!"
 	case go_fifa.Hydration:
 		prefix = ":droplet:"
+	case go_fifa.VARGoalDisallowed:
+		prefix = ":no_entry_sign:"
 	}
 	var msg string
 	if len(evt.Description) > 0 {

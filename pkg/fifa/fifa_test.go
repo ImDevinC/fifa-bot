@@ -2,6 +2,8 @@ package fifa_test
 
 import (
 	"context"
+	"encoding/json"
+	"os"
 	"testing"
 
 	"github.com/imdevinc/fifa-bot/pkg/fifa"
@@ -16,16 +18,18 @@ func TestLiveEvents(t *testing.T) {
 		CompetitionId:  "17",
 		SeasonId:       "285023",
 		StageId:        "289287",
-		MatchId:        "400021535",
+		MatchId:        "400021528",
 		HomeTeamID:     "43971",
 		AwayTeamID:     "43926",
-		HomeTeamAbbrev: "SUI",
-		AwayTeamAbbrev: "COL",
+		HomeTeamAbbrev: "ARG",
+		AwayTeamAbbrev: "EGY",
 	}
 	resp, err := fifa.GetMatchEvents(context.Background(), &client, &m)
 	if ok := assert.NoError(t, err); !ok {
 		t.Fail()
 	}
+	evts, _ := json.Marshal(resp.NewEvents)
+	os.WriteFile("events.json", evts, 0644)
 	emptySkipSet := make(map[go_fifa.MatchEvent]bool)
 	for _, e := range resp.NewEvents {
 		msg := fifa.ProcessEvent(context.Background(), e, &m, emptySkipSet)

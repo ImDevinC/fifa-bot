@@ -24,6 +24,7 @@ FIFA Bot monitors live FIFA matches and sends real-time notifications to a Slack
 - **Concurrent processing**: Handles multiple matches simultaneously
 - **Docker support**: Containerized deployment ready
 - **Profiling support**: Optional pprof endpoint for performance monitoring
+- **Sentry integration**: Automatically captures unknown event types to Sentry for tracking
 
 ## Configuration
 
@@ -42,6 +43,7 @@ redis:
 log_level: "WARN"                 # DEBUG, INFO, WARN, ERROR (default: WARN)
 enable_profiling: false           # Enable pprof endpoint (default: false)
 profiling_port: 8080              # pprof server port (default: 8080)
+sentry_dsn: "https://..."        # Optional: Sentry DSN for tracking unknown events
 ```
 
 ### Environment Variable Overrides
@@ -59,6 +61,7 @@ Any config value can be overridden by its corresponding environment variable:
 | `LOG_LEVEL` | `log_level` | No |
 | `ENABLE_PROFILING` | `enable_profiling` | No |
 | `PROFILING_PORT` | `profiling_port` | No |
+| `SENTRY_DSN` | `sentry_dsn` | No |
 
 ## Installation & Usage
 
@@ -123,6 +126,32 @@ services:
 - **`pkg/fifa/`**: FIFA API integration and event processing
 - **`pkg/database/`**: Redis database operations
 - **`pkg/models/`**: Data structures for matches and Slack messages
+
+## Unknown Event Tracking with Sentry
+
+When the bot encounters a match event type it doesn't recognize, instead of sending a generic Slack message, it creates a new issue in Sentry for tracking. This helps identify new or undocumented FIFA API event types.
+
+### Setup
+
+1. Create a Sentry account and project at https://sentry.io
+2. Copy your project's DSN (found in Project Settings -> Client Keys)
+3. Add `sentry_dsn` to your config file or set the `SENTRY_DSN` environment variable
+
+### What Gets Captured
+
+Each unknown event creates a Sentry issue containing:
+
+- **Tags**: Event type code, match ID, stage ID, season ID, competition ID, and team abbreviations — for easy filtering in Sentry
+- **Extra data**: The full JSON of the event payload and the complete match info, accessible in the Sentry issue details
+
+### Example Sentry Issue
+
+When enabled, an unknown event will create an issue in Sentry with a message like:
+```
+Unknown event type: 42 in match 400021528 (ARG vs BRA)
+```
+
+You can then use the tags and extra data to research the new event type and add support for it.
 
 ## Slack Webhook Setup
 

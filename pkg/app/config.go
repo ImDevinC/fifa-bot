@@ -20,6 +20,7 @@ type Config struct {
 	EnableProfiling bool     `mapstructure:"enable_profiling"`
 	ProfilingPort   int      `mapstructure:"profiling_port"`
 	SkipEvents      []string `mapstructure:"skip_events"`
+	SentryDSN       string   `mapstructure:"sentry_dsn"`
 }
 
 func LoadConfig(configPath string) (*Config, error) {

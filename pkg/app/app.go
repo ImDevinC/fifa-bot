@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/imdevinc/fifa-bot/pkg/database"
 	"github.com/imdevinc/fifa-bot/pkg/fifa"
 	"github.com/imdevinc/fifa-bot/pkg/models"
@@ -29,9 +30,10 @@ type app struct {
 	sleepTimeSeconds time.Duration
 	eventsToSkip     map[go_fifa.MatchEvent]bool
 	matchMutex       *sync.Mutex
+	sentryEnabled    bool
 }
 
-func New(db database.Database, fifa *go_fifa.Client, slackWebhookURL string, competitionId string, sleepTimeSeconds int, eventsToSkip map[go_fifa.MatchEvent]bool) *app {
+func New(db database.Database, fifa *go_fifa.Client, slackWebhookURL string, competitionId string, sleepTimeSeconds int, eventsToSkip map[go_fifa.MatchEvent]bool, sentryEnabled bool) *app {
 	if eventsToSkip == nil {
 		eventsToSkip = make(map[go_fifa.MatchEvent]bool)
 	}
@@ -44,6 +46,7 @@ func New(db database.Database, fifa *go_fifa.Client, slackWebhookURL string, com
 		sleepTimeSeconds: time.Duration(sleepTimeSeconds),
 		eventsToSkip:     eventsToSkip,
 		matchMutex:       &sync.Mutex{},
+		sentryEnabled:    sentryEnabled,
 	}
 }
 
@@ -192,10 +195,51 @@ func (a *app) findNewEvents(ctx context.Context, existingEvents []string, newEve
 		if eventFound {
 			continue
 		}
-		eventData := fifa.ProcessEvent(ctx, event, opts, a.eventsToSkip)
-		slog.Debug("found new event", "eventId", event.Id, "message", eventData)
+		result := fifa.ProcessEvent(ctx, event, opts, a.eventsToSkip)
+
+		// Unknown event types are captured to Sentry instead of sent to Slack
+		if result.IsUnknown {
+			slog.Warn("unknown event type detected", "eventId", event.Id, "eventType", event.Type, "matchId", opts.MatchId)
+			if a.sentryEnabled {
+				a.captureUnknownEvent(event, opts)
+			}
+			eventIds = append(eventIds, event.Id)
+			continue
+		}
+
+		slog.Debug("found new event", "eventId", event.Id, "message", result.SlackMessage)
 		eventIds = append(eventIds, event.Id)
-		eventMsgs = append(eventMsgs, eventData)
+		eventMsgs = append(eventMsgs, result.SlackMessage)
 	}
 	return eventIds, eventMsgs
+}
+
+func (a *app) captureUnknownEvent(evt go_fifa.TimelineEvent, match *models.Match) {
+	eventJSON, err := json.Marshal(evt)
+	if err != nil {
+		slog.Error("failed to marshal unknown event to JSON", "error", err)
+		return
+	}
+
+	matchJSON, err := json.Marshal(match)
+	if err != nil {
+		slog.Error("failed to marshal match info to JSON", "error", err)
+		return
+	}
+
+	sentry.WithScope(func(scope *sentry.Scope) {
+		scope.SetTags(map[string]string{
+			"event_type":     fmt.Sprintf("%d", evt.Type),
+			"match_id":       match.MatchId,
+			"stage_id":       match.StageId,
+			"season_id":      match.SeasonId,
+			"competition_id": match.CompetitionId,
+			"home_team":      match.HomeTeamAbbrev,
+			"away_team":      match.AwayTeamAbbrev,
+		})
+		scope.SetExtra("full_event_json", string(eventJSON))
+		scope.SetExtra("match_info_json", string(matchJSON))
+		sentry.CaptureMessage(fmt.Sprintf("Unknown event type: %d in match %s (%s vs %s)",
+			evt.Type, match.MatchId, match.HomeTeamAbbrev, match.AwayTeamAbbrev))
+	})
 }

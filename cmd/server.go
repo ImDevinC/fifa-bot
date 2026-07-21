@@ -7,7 +7,9 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/getsentry/sentry-go"
 	"github.com/imdevinc/fifa-bot/pkg/app"
 	"github.com/imdevinc/fifa-bot/pkg/database"
 	"github.com/imdevinc/fifa-bot/pkg/fifa"
@@ -51,7 +53,21 @@ func main() {
 		logger.Warn("invalid skip_events entry, skipping unknown names", "error", err)
 	}
 
-	server := app.New(db, &fc, cfg.SlackWebhookURL, cfg.CompetitionID, cfg.SleepTimeSeconds, skipSet)
+	sentryEnabled := false
+	if cfg.SentryDSN != "" {
+		err := sentry.Init(sentry.ClientOptions{
+			Dsn: cfg.SentryDSN,
+		})
+		if err != nil {
+			logger.Error("failed to initialize sentry", "error", err)
+		} else {
+			sentryEnabled = true
+			logger.Info("sentry initialized", "dsn", cfg.SentryDSN)
+			defer sentry.Flush(2 * time.Second)
+		}
+	}
+
+	server := app.New(db, &fc, cfg.SlackWebhookURL, cfg.CompetitionID, cfg.SleepTimeSeconds, skipSet, sentryEnabled)
 	if err := server.Run(context.Background()); err != nil {
 		logger.Error("server failed", "error", err)
 		os.Exit(1)

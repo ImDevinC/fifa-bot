@@ -32,11 +32,11 @@ func TestLiveEvents(t *testing.T) {
 	os.WriteFile("events.json", evts, 0644)
 	emptySkipSet := make(map[go_fifa.MatchEvent]bool)
 	for _, e := range resp.NewEvents {
-		msg := fifa.ProcessEvent(context.Background(), e, &m, emptySkipSet)
-		if len(msg) == 0 {
+		result := fifa.ProcessEvent(context.Background(), e, &m, emptySkipSet)
+		if len(result.SlackMessage) == 0 {
 			continue
 		}
-		t.Log(msg)
+		t.Log(result.SlackMessage)
 	}
 }
 
@@ -139,10 +139,10 @@ func TestCustomEvents(t *testing.T) {
 		},
 	}
 	for _, evt := range events {
-		msg := fifa.ProcessEvent(context.Background(), evt, &match, emptySkipSet)
-		if len(msg) == 0 {
+		result := fifa.ProcessEvent(context.Background(), evt, &match, emptySkipSet)
+		if len(result.SlackMessage) == 0 {
 			continue
 		}
-		t.Log(msg)
+		t.Log(result.SlackMessage)
 	}
 }

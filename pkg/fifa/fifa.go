@@ -41,6 +41,17 @@ type MatchData struct {
 	PendingEventFound bool
 }
 
+// ProcessEventResult contains the result of processing a match event.
+type ProcessEventResult struct {
+	// SlackMessage is the formatted message to send to Slack.
+	// Empty if the event should be skipped entirely.
+	SlackMessage string
+
+	// IsUnknown indicates whether the event type was not recognized.
+	// When true, the event should be reported to Sentry instead of Slack.
+	IsUnknown bool
+}
+
 func GetMatchEvents(ctx context.Context, fifaClient *go_fifa.Client, opts *models.Match) (MatchData, error) {
 	returnData := MatchData{
 		PendingEventFound: false,
@@ -123,9 +134,9 @@ func processShootoutResults(match *models.Match, homeTeamFlag string, awayTeamFl
 	return fmt.Sprintf("%s %s %s : %s %s %s", match.HomeTeamPenaltyResults, match.HomeTeamAbbrev, homeTeamFlag, awayTeamFlag, match.AwayTeamAbbrev, match.AwayTeamPenaltyResults)
 }
 
-func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *models.Match, skipSet map[go_fifa.MatchEvent]bool) string {
+func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *models.Match, skipSet map[go_fifa.MatchEvent]bool) ProcessEventResult {
 	if skipSet[evt.Type] {
-		return ""
+		return ProcessEventResult{}
 	}
 
 	prefix := ""
@@ -175,7 +186,7 @@ func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *models.M
 	case go_fifa.PenaltyAwarded:
 		// This causes some spam messaging, so skip during shootouts
 		if evt.Period == go_fifa.ShootoutPeriod {
-			return ""
+			return ProcessEventResult{}
 		}
 		prefix = "Penalty awarded!"
 	case go_fifa.Hydration:
@@ -193,10 +204,10 @@ func ProcessEvent(ctx context.Context, evt go_fifa.TimelineEvent, opts *models.M
 	msg = strings.TrimSpace(msg)
 
 	if len(msg) == 0 {
-		msg = fmt.Sprintf("[EVENTINFO] Need info for event type: %d", evt.Type)
-	} else {
-		msg = fmt.Sprintf("%s %s", evt.MatchMinute, msg)
+		// Unknown event type - indicate so the caller can report it to Sentry
+		return ProcessEventResult{IsUnknown: true}
 	}
 
-	return msg
+	msg = fmt.Sprintf("%s %s", evt.MatchMinute, msg)
+	return ProcessEventResult{SlackMessage: msg}
 }

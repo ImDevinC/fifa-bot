@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -38,15 +39,20 @@ func main() {
 	db := database.NewRedisClient(cfg.Redis.Address, cfg.Redis.Password, cfg.Redis.Database)
 	fc := go_fifa.Client{}
 
-	if cfg.EnableProfiling {
-		go func() {
-			logger.Info("starting pprof server", "port", cfg.ProfilingPort)
+	go func() {
+		http.HandleFunc("/healthz", healthHandler(db))
+
+		if cfg.EnableProfiling {
+			logger.Info("starting pprof and health check server", "port", cfg.ProfilingPort)
 			http.HandleFunc("/", handle)
-			if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.ProfilingPort), nil); err != nil {
-				logger.Error("profiling server failed", "error", err)
-			}
-		}()
-	}
+		} else {
+			logger.Info("starting health check server", "port", cfg.ProfilingPort)
+		}
+
+		if err := http.ListenAndServe(fmt.Sprintf(":%d", cfg.ProfilingPort), nil); err != nil {
+			logger.Error("HTTP server failed", "error", err)
+		}
+	}()
 
 	skipSet, err := fifa.ParseEventNames(cfg.SkipEvents)
 	if err != nil {
@@ -71,6 +77,35 @@ func main() {
 	if err := server.Run(context.Background()); err != nil {
 		logger.Error("server failed", "error", err)
 		os.Exit(1)
+	}
+}
+
+type healthResponse struct {
+	Status string `json:"status"`
+	Redis  string `json:"redis"`
+}
+
+func healthHandler(db database.Database) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer cancel()
+
+		w.Header().Set("Content-Type", "application/json")
+
+		resp := healthResponse{}
+
+		if err := db.Ping(ctx); err != nil {
+			resp.Status = "error"
+			resp.Redis = "disconnected"
+			w.WriteHeader(http.StatusServiceUnavailable)
+			json.NewEncoder(w).Encode(resp)
+			return
+		}
+
+		resp.Status = "ok"
+		resp.Redis = "connected"
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(resp)
 	}
 }
 
